@@ -26,7 +26,7 @@ add_library(user-c-config INTERFACE)
 add_library(user-cxx-config INTERFACE)
 
 find_package(timemory REQUIRED
-    COMPONENTS headers papi gotcha gperftools-cpu vector gotcha compile-options)
+    COMPONENTS headers papi vector compile-options)
 
 target_link_libraries(user-c-config   INTERFACE timemory timemory-c-shared)
 target_link_libraries(user-cxx-config INTERFACE timemory)
@@ -178,7 +178,6 @@ $ cmake -DCMAKE_BUILD_TYPE=Release ..
 --     timemory-cudart-static
 --     timemory-cupti
 --     timemory-cuda-nvtx
---     timemory-gotcha
 -- [Instrumentation-Benchmark] timemory : "timemory" components: compile-options, gperftools-cpu, headers, vector
 -- Found timemory: /opt/timemory
 -- Found PythonInterp: /opt/local/bin/python3.7 (found version "3.7.4")
