@@ -16,6 +16,8 @@ The `cmake/UserSettings.cmake` file configures two CMake `INTERFACE` libraries t
   - This will be linked to the C benchmarks
 - `user-cxx-config`
   - This will be linked to the C++ benchmarks
+  
+`cmake/UserSettings.cmake` is the default user config file. In order to maintain multiple configs, override the `USER_CONFIG` CMake CACHE variable to point to the desired configuration file.
 
 #### Example `UserSettings.cmake`
 
