@@ -1,0 +1,7 @@
+
+# ignore all
+/*
+/*/
+
+# except Modules folder
+!/Modules/
