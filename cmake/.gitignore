@@ -1,0 +1,8 @@
+
+# ignore all
+/*
+/*/
+
+# except Modules folder and README
+!/Modules/
+!/README.md
