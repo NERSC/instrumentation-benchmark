@@ -29,7 +29,7 @@
 #if !defined(__cplusplus)
 //--------------------------------------------------------------------------------------//
 /// get the time
-double
+inline double
 wtime()
 {
     struct timeval now;

@@ -3,5 +3,6 @@
 /*
 /*/
 
-# except Modules folder
+# except Modules folder and README
 !/Modules/
+!/README.md

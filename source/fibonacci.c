@@ -19,3 +19,15 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+#include "@SUBMODULE_HEADER_FILE@"
+
+// assume this is bare minimum...
+#if !defined(INSTRUMENT_CREATE) && !defined(INSTRUMENT_START)
+#    error "Submodule header did not define INSTRUMENT_CREATE or INSTRUMENT_START"
+#endif
+
+// provides instrumentation definitions if not
+#include "fallback_inst.h"
+// provides structures for returning data to python
+#include "instrumentation.h"

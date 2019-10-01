@@ -20,29 +20,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <stdio.h>
-#include <string.h>
-
-#if !defined(USE_INST)
+#pragma once
 
 //
 // will be invoked with something like:
-//      INSTRUMENT_<MODE>("custom-tag")
+//      INSTRUMENT_<MODE>(...)
 //  and one can use __FILE__, __func__, and __LINE__ as needed
 //
+#if !defined(INSTRUMENT_CREATE)
 #    define INSTRUMENT_CREATE(...)
+#endif
+
+#if !defined(INSTRUMENT_START)
 #    define INSTRUMENT_START(...)
+#endif
+
+#if !defined(INSTRUMENT_STOP)
 #    define INSTRUMENT_STOP(...)
-
-#else
-
-//
-// will be invoked with something like:
-//      INSTRUMENT_<MODE>("custom-tag")
-//  and one can use __FILE__, __func__, and __LINE__ as needed
-//
-#    define INSTRUMENT_CREATE(...)
-#    define INSTRUMENT_START(...)
-#    define INSTRUMENT_STOP(...)
-
 #endif
