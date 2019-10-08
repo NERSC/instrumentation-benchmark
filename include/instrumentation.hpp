@@ -102,7 +102,7 @@ struct cxx_runtime_data
         else
         {
             auto _inst_count = std::get<1>(_entry);
-            if(std::get<2>(_entry) > timing[0] && _inst_count != 0)
+            if(_inst_count != 0)
                 overhead[idx] += (std::get<2>(_entry) - timing[0]) /
                                  (static_cast<double>(_inst_count));
         }

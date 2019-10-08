@@ -90,7 +90,7 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     using ivec_t  = std::vector<int64_t>;
     using entry_t = std::tuple<int64_t, int64_t, double>;
 
-    printf("Running %" PRId64 " a MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
+    printf("Running %" PRId64 " MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
     auto _a = dvec_t(s * s, 0.0);
     auto _b = dvec_t(s * s, 0.0);
     auto _c = dvec_t(s * s, 0.0);
@@ -114,22 +114,21 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     // base-line
     for(int64_t i = 0; i < nitr; ++i)
     {
-        double  t1         = wtime();
+        double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
-        double tdiff = wtime() - t1;
-        if(tdiff < 0.0)
-            tdiff = 0.0;
+        double t_end  = wtime();
+        double t_diff = t_end - t_beg;
 
-        data += entry_t(0, inst_count, tdiff);
+        data += entry_t(0, inst_count, t_diff);
     }
     data /= std::tuple<int64_t, int64_t>(0, nitr);
 
     // with instrumentation
     for(int64_t i = 0; i < nitr; ++i)
     {
-        double  t1         = wtime();
+        double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
 #if !defined(USE_INST)
@@ -137,11 +136,10 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
 #else
             inst_count += mm_inst(s, a, b, c);
 #endif
-        double tdiff = wtime() - t1;
-        if(tdiff < 0.0)
-            tdiff = 0.0;
+        double t_end  = wtime();
+        double t_diff = t_end - t_beg;
 
-        data += entry_t(i + 1, inst_count, tdiff);
+        data += entry_t(i + 1, inst_count, t_diff);
     }
 
     return data;

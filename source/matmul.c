@@ -86,7 +86,7 @@ c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
 {
     INSTRUMENT_CONFIGURE();
 
-    printf("Running %" PRId64 " a MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
+    printf("Running %" PRId64 " MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
     double* a = (double*) malloc(s * s * sizeof(double));
     double* b = (double*) malloc(s * s * sizeof(double));
     double* c = (double*) malloc(s * s * sizeof(double));
@@ -113,10 +113,6 @@ c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
             inst_count += mm(s, a, b, c);
         double t_end  = wtime();
         double t_diff = t_end - t_beg;
-        if(t_diff < 0.0)
-            t_diff = 0.0;
-        if(inst_count < 0)
-            inst_count = 0;
 
         data.inst_count[0] += inst_count;
         data.timing[0] += t_diff;
@@ -143,15 +139,13 @@ c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
         }
         double t_end  = wtime();
         double t_diff = t_end - t_beg;
-        if(t_diff < 0.0)
-            t_diff = 0.0;
 
         int idx                = i + 1;
         data.inst_count[idx]   = inst_count;
         data.timing[idx]       = t_diff;
         data.inst_per_sec[idx] = ((double) inst_count) / t_diff;
 
-        if(t_diff > data.timing[0] && inst_count != 0)
+        if(inst_count != 0)
             data.overhead[idx] = ((t_diff - data.timing[0]) / ((double) inst_count));
         else
             data.overhead[idx] = 0.0;
