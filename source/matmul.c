@@ -46,7 +46,7 @@ mm(int64_t s, double* a, double* b, double* c)
                 a[i * s + j] += b[i * s + k] * c[k * s + j];
         }
     }
-    return s * s;
+    return 0;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -59,14 +59,11 @@ mm_inst(int64_t s, double* a, double* b, double* c)
     {
         for(int64_t j = 0; j < s; j++)
         {
-            char buf[32];
-            sprintf(buf, "%" PRId64, j);
-
-            INSTRUMENT_CREATE(buf);
-            INSTRUMENT_START(buf);
+            INSTRUMENT_CREATE(j);
+            INSTRUMENT_START(j);
             for(int64_t k = 0; k < s; k++)
                 a[i * s + j] += b[i * s + k] * c[k * s + j];
-            INSTRUMENT_STOP(buf);
+            INSTRUMENT_STOP(j);
         }
     }
     return s * s;
@@ -87,17 +84,15 @@ mm_reset(int64_t s, double* a, double* b, double* c)
 c_runtime_data
 c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
 {
+    INSTRUMENT_CONFIGURE();
+
     printf("Running %" PRId64 " a MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
     double* a = (double*) malloc(s * s * sizeof(double));
     double* b = (double*) malloc(s * s * sizeof(double));
     double* c = (double*) malloc(s * s * sizeof(double));
 
-    int64_t        nentries = nitr + 1;
-    c_runtime_data data     = { nentries, NULL, NULL, NULL, NULL };
-    data.inst_count         = (int64_t*) malloc(nentries * sizeof(int64_t));
-    data.timing             = (double*) malloc(nentries * sizeof(double));
-    data.inst_per_sec       = (double*) malloc(nentries * sizeof(double));
-    data.overhead           = (double*) malloc(nentries * sizeof(double));
+    c_runtime_data data;
+    init_runtime_data(nitr + 1, &data);
 
     mm_reset(s, a, b, c);
 
@@ -112,40 +107,54 @@ c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     // base-line
     for(int64_t i = 0; i < nitr; ++i)
     {
-        double  t1         = wtime();
+        double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
-        double tdiff = wtime() - t1;
+        double t_end  = wtime();
+        double t_diff = t_end - t_beg;
+        if(t_diff < 0.0)
+            t_diff = 0.0;
+        if(inst_count < 0)
+            inst_count = 0;
 
-        int idx = 0;
-        data.inst_count[idx] += inst_count;
-        data.timing[idx] += tdiff;
-        data.inst_per_sec[idx] += ((double) inst_count) / tdiff;
-        data.overhead[idx] = 0.0;
-
-        if(i + 1 == nitr)
-        {
-            data.inst_count[idx] /= nitr;
-            data.timing[idx] /= nitr;
-            data.inst_per_sec[idx] /= nitr;
-        }
+        data.inst_count[0] += inst_count;
+        data.timing[0] += t_diff;
+        data.inst_per_sec[0] += ((double) inst_count) / t_diff;
+        data.overhead[0] = 0.0;
     }
+
+    data.inst_count[0] /= nitr;
+    data.timing[0] /= nitr;
+    data.inst_per_sec[0] /= nitr;
 
     // with instrumentation
     for(int64_t i = 0; i < nitr; ++i)
     {
-        double  t1         = wtime();
+        double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
+        {
+#if !defined(USE_INST)
+            inst_count += mm(s, a, b, c);
+#else
             inst_count += mm_inst(s, a, b, c);
-        double tdiff = wtime() - t1;
+#endif
+        }
+        double t_end  = wtime();
+        double t_diff = t_end - t_beg;
+        if(t_diff < 0.0)
+            t_diff = 0.0;
 
         int idx                = i + 1;
         data.inst_count[idx]   = inst_count;
-        data.timing[idx]       = tdiff;
-        data.inst_per_sec[idx] = ((double) inst_count) / tdiff;
-        data.overhead[idx]     = ((tdiff - data.timing[0]) / ((double) inst_count));
+        data.timing[idx]       = t_diff;
+        data.inst_per_sec[idx] = ((double) inst_count) / t_diff;
+
+        if(t_diff > data.timing[0] && inst_count != 0)
+            data.overhead[idx] = ((t_diff - data.timing[0]) / ((double) inst_count));
+        else
+            data.overhead[idx] = 0.0;
     }
 
     free(a);

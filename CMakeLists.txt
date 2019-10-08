@@ -127,13 +127,13 @@ define_submodule(
     EXTRA_LANGUAGES     C
 )
 
-define_submodule(
-    NAME                dormant
-    LANGUAGE            CXX
-    HEADER_FILE         ../fallback_inst.h
-    INTERFACE_LIBRARY   fallback-config
-    EXTRA_LANGUAGES     C
-)
+# define_submodule(
+#     NAME                dormant
+#     LANGUAGE            CXX
+#     HEADER_FILE         ../fallback_inst.h
+#     INTERFACE_LIBRARY   fallback-config
+#     EXTRA_LANGUAGES     C
+# )
 
 # get all the modules
 get_property(INST_MODULE_NAMES GLOBAL PROPERTY INST_MODULE_NAMES)
@@ -163,9 +163,14 @@ foreach(_MODULE ${INST_MODULE_NAMES})
         list(APPEND _INTERFACE_LIBS ${_ENTRY}-language)
     endforeach()
 
+    if(TARGET global-config)
+        list(APPEND _INTERFACE_LIBS global-config)
+    endif()
+
     if(NOT _IS_REF)
         list(APPEND _INTERFACE_LIBS instrument-enabled)
     endif()
+    message(STATUS "${_MODULE} is reference: ${_IS_REF}")
 
     list(REMOVE_DUPLICATES _INTERFACE_LIBS)
     message(STATUS "${_MODULE} interface libraries: ${_INTERFACE_LIBS}")
@@ -212,7 +217,7 @@ foreach(_MODULE ${INST_MODULE_NAMES})
     # create library
     add_library(inst-bench-${_TARGET_MODULE} SHARED ${_TARGET_SOURCES} ${_TARGET_HEADERS})
     target_link_libraries(inst-bench-${_TARGET_MODULE}
-        PUBLIC instrument-headers instrument-enabled ${_INTERFACE_LIBS})
+        PUBLIC instrument-headers ${_INTERFACE_LIBS})
     set_target_properties(inst-bench-${_TARGET_MODULE} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}
         LIBRARY_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}

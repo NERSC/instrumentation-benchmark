@@ -63,30 +63,57 @@
 namespace py   = pybind11;
 using string_t = std::string;
 
+template <typename... _Args>
+void
+consume_parameters(_Args&&...)
+{
+}
+
 PYBIND11_MODULE(INST_MODULE_NAME, inst)
 {
     py::add_ostream_redirect(inst, "ostream_redirect");
 
+    //----------------------------------------------------------------------------------//
+    //
     // define calls to C tests here
+    //
+    //----------------------------------------------------------------------------------//
 #if defined(USE_C)
     auto execute_c_matmul = [](int64_t s, int64_t max, int64_t nitr) {
         c_runtime_data ret = c_execute_matmul(s, max, nitr);
         // convert to C++ type
         cxx_runtime_data _data(ret.entries);
         using result_t = std::tuple<int64_t, int64_t, double, double, double>;
-        for(int64_t i = 0; i < ret.entries; ++i)
-            _data += result_t(i, ret.inst_count[i], ret.timing[i], ret.inst_per_sec[i],
-                              ret.overhead[i]);
+        for(int64_t j = 0; j < ret.entries; ++j)
+            _data += result_t(j, ret.inst_count[j], ret.timing[j], ret.inst_per_sec[j],
+                              ret.overhead[j]);
+        free_runtime_data(ret);
         return _data;
     };
 #endif
 
+    //----------------------------------------------------------------------------------//
+    //
     // define calls to C++ tests here
+    //
+    //----------------------------------------------------------------------------------//
+
 #if defined(USE_CXX)
     auto execute_cxx_matmul = [](int64_t s, int64_t max, int64_t nitr) {
         return cxx_execute_matmul(s, max, nitr);
     };
+
+    auto execute_cxx_fibonacci = [](int64_t nfib, int64_t cutoff, int64_t nitr) {
+        return cxx_execute_fibonacci(nfib, cutoff, nitr);
+    };
+
 #endif
+
+    //----------------------------------------------------------------------------------//
+    //
+    // execute matrix multiply
+    //
+    //----------------------------------------------------------------------------------//
 
     auto execute_matmul = [&](int64_t s, int64_t max, int64_t nitr, std::string lang) {
         for(auto& itr : lang)
@@ -96,9 +123,9 @@ PYBIND11_MODULE(INST_MODULE_NAME, inst)
 
         if(lang == "c")
         {
-#    if defined(USE_C)
+#if defined(USE_C)
             _data = new cxx_runtime_data(execute_c_matmul(s, max, nitr));
-#    endif
+#endif
         }
 
         if(lang == "cxx")
@@ -112,9 +139,50 @@ PYBIND11_MODULE(INST_MODULE_NAME, inst)
         return _data;
     };
 
+    //----------------------------------------------------------------------------------//
+    //
+    // execute fibonacci
+    //
+    //----------------------------------------------------------------------------------//
+
+    auto execute_fibonacci = [&](int64_t nfib, int64_t cutoff, int64_t nitr,
+                                 std::string lang) {
+        for(auto& itr : lang)
+            itr = tolower(itr);
+
+        cxx_runtime_data* _data = nullptr;
+
+        if(lang == "c")
+        {
+#if defined(USE_C)
+            // not implemented yet
+            _data = nullptr;
+            consume_parameters(nfib, cutoff, nitr);
+#endif
+        }
+
+        if(lang == "cxx")
+        {
+#if defined(USE_CXX)
+            _data = new cxx_runtime_data(execute_cxx_fibonacci(nfib, cutoff, nitr));
+#endif
+        }
+
+        // potentially return None to Python
+        return _data;
+    };
+
+    //----------------------------------------------------------------------------------//
+
     inst.def("matmul", execute_matmul, "Execute matrix multiply test",
              py::arg("size") = 100, py::arg("ientry") = 10000, py::arg("nitr") = 1,
              py::arg("language") = DEFAULT_LANGUAGE);
+
+    inst.def("fibonacci", execute_fibonacci, "Execute fibonacci test",
+             py::arg("size") = 43, py::arg("cutoff") = 23, py::arg("nitr") = 1,
+             py::arg("language") = DEFAULT_LANGUAGE);
+
+    //----------------------------------------------------------------------------------//
 
 #if defined(BUILD_RUNTIME_DATA_BINDINGS)
     py::class_<cxx_runtime_data> runtime_data(inst, "runtime_data");

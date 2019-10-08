@@ -46,7 +46,7 @@ mm(int64_t s, double* a, double* b, double* c)
                 a[i * s + j] += b[i * s + k] * c[k * s + j];
         }
     }
-    return s * s;
+    return 0;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -84,6 +84,8 @@ mm_reset(int64_t s, double* a, double* b, double* c)
 cxx_runtime_data
 cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
 {
+    INSTRUMENT_CONFIGURE();
+
     using dvec_t  = std::vector<double>;
     using ivec_t  = std::vector<int64_t>;
     using entry_t = std::tuple<int64_t, int64_t, double>;
@@ -117,12 +119,12 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
         double tdiff = wtime() - t1;
+        if(tdiff < 0.0)
+            tdiff = 0.0;
 
         data += entry_t(0, inst_count, tdiff);
-
-        if(i + 1 == nitr)
-            data /= std::tuple<int64_t, int64_t>(0, nitr);
     }
+    data /= std::tuple<int64_t, int64_t>(0, nitr);
 
     // with instrumentation
     for(int64_t i = 0; i < nitr; ++i)
@@ -130,8 +132,14 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
         double  t1         = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
+#if !defined(USE_INST)
+            inst_count += mm(s, a, b, c);
+#else
             inst_count += mm_inst(s, a, b, c);
+#endif
         double tdiff = wtime() - t1;
+        if(tdiff < 0.0)
+            tdiff = 0.0;
 
         data += entry_t(i + 1, inst_count, tdiff);
     }

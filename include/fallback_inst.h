@@ -22,19 +22,22 @@
 
 #pragma once
 
-//
-// will be invoked with something like:
-//      INSTRUMENT_<MODE>(...)
-//  and one can use __FILE__, __func__, and __LINE__ as needed
-//
+// configure tool before any tests are run
+#if !defined(INSTRUMENT_CONFIGURE)
+#    define INSTRUMENT_CONFIGURE()
+#endif
+
+// create something if needed
 #if !defined(INSTRUMENT_CREATE)
 #    define INSTRUMENT_CREATE(...)
 #endif
 
+// start tool as needed
 #if !defined(INSTRUMENT_START)
 #    define INSTRUMENT_START(...)
 #endif
 
+// stop tool as needed
 #if !defined(INSTRUMENT_STOP)
 #    define INSTRUMENT_STOP(...)
 #endif

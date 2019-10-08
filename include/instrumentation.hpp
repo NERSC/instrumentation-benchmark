@@ -20,23 +20,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <chrono>
 #include <cinttypes>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <ratio>
 #include <sys/time.h>
 #include <tuple>
 #include <vector>
 
 #if defined(__cplusplus)
 //--------------------------------------------------------------------------------------//
-/// get the time
-inline double
+// the system's real time (i.e. wall time) clock, expressed as the amount of time since
+// the epoch.
+template <typename _Tp = double, typename Precision = std::nano>
+_Tp
 wtime()
 {
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    return (double) now.tv_sec + 0.000001 * now.tv_usec;
+    using clock_type    = std::chrono::steady_clock;
+    using duration_type = std::chrono::duration<clock_type::rep, Precision>;
+    return std::chrono::duration_cast<duration_type>(clock_type::now().time_since_epoch())
+               .count() /
+           static_cast<_Tp>(std::nano::den);
 }
 #endif
 
@@ -74,10 +80,13 @@ struct cxx_runtime_data
     cxx_runtime_data& operator/=(const std::tuple<int64_t, int64_t>& _div)
     {
         auto idx = std::get<0>(_div);
-        inst_count[idx] /= std::get<1>(_div);
-        timing[idx] /= std::get<1>(_div);
-        inst_per_sec[idx] /= std::get<1>(_div);
-        overhead[idx] /= std::get<1>(_div);
+        if(std::get<1>(_div) > 0)
+        {
+            inst_count[idx] /= std::get<1>(_div);
+            timing[idx] /= std::get<1>(_div);
+            inst_per_sec[idx] /= std::get<1>(_div);
+            overhead[idx] /= std::get<1>(_div);
+        }
         return *this;
     }
 
@@ -92,8 +101,10 @@ struct cxx_runtime_data
             overhead[idx] = 0.0;
         else
         {
-            overhead[idx] += (std::get<2>(_entry) - timing[0]) /
-                             (static_cast<double>(std::get<1>(_entry)));
+            auto _inst_count = std::get<1>(_entry);
+            if(std::get<2>(_entry) > timing[0] && _inst_count != 0)
+                overhead[idx] += (std::get<2>(_entry) - timing[0]) /
+                                 (static_cast<double>(_inst_count));
         }
         return *this;
     }
@@ -105,13 +116,21 @@ struct cxx_runtime_data
         timing[idx]       = std::get<2>(_result);
         inst_per_sec[idx] = std::get<3>(_result);
         overhead[idx]     = std::get<4>(_result);
+        if(inst_count[idx] < 0)
+            inst_count[idx] = 0;
         return *this;
     }
 };
 
 //--------------------------------------------------------------------------------------//
-/// execute a test
+/// execute a matrix multiply test
+///
 cxx_runtime_data
 cxx_execute_matmul(int64_t s, int64_t max, int64_t nitr);
+
+/// execute a fibonacci tets
+///
+cxx_runtime_data
+cxx_execute_fibonacci(int64_t nfib, int64_t cutoff, int64_t nitr);
 
 //--------------------------------------------------------------------------------------//
