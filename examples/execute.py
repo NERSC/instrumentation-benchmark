@@ -163,8 +163,8 @@ if __name__ == "__main__":
         plot(fib_keys, fib_time_data["y"],
              fib_time_data["yerr"], "Fibonacci({}, {}) Runtime".format(
                  m_F, m_C),
-             "{}_FIBONACCI_RUNTIME.png".format(args.prefix.upper()))
+             "{}_FIBONACCI_RUNTIME.png".format(args.prefix.upper().strip("_")))
         plot(fib_keys, fib_over_data["y"],
              fib_over_data["yerr"], "Fibonacci({}, {}) Overhead".format(
                  m_F, m_C),
-             "{}_FIBONACCI_OVERHEAD.png".format(args.prefix.upper()))
+             "{}_FIBONACCI_OVERHEAD.png".format(args.prefix.upper().strip("_")))

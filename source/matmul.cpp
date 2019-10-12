@@ -71,12 +71,29 @@ mm_inst(int64_t s, double* a, double* b, double* c)
 
 //--------------------------------------------------------------------------------------//
 
+// returns sum of a
+double
+mm_sum(int64_t s, double* a)
+{
+    double sum = 0.0;
+    for(int64_t i = 0; i < s; i++)
+        for(int64_t j = 0; j < s; j++)
+            sum += a[i * s + j];
+    return sum;
+}
+
+//--------------------------------------------------------------------------------------//
+
 void
 mm_reset(int64_t s, double* a, double* b, double* c)
 {
     for(int64_t i = 0; i < s; i++)
         for(int64_t j = 0; j < s; j++)
-            a[i * s + j] = b[i * s + j] = c[i * s + j] = 1.0;
+        {
+            a[i * s + j] = 0.0;
+            b[i * s + j] = 1.0;
+            c[i * s + j] = 2.0;
+        }
 }
 
 //--------------------------------------------------------------------------------------//
@@ -84,8 +101,6 @@ mm_reset(int64_t s, double* a, double* b, double* c)
 cxx_runtime_data
 cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
 {
-    INSTRUMENT_CONFIGURE();
-
     using dvec_t  = std::vector<double>;
     using ivec_t  = std::vector<int64_t>;
     using entry_t = std::tuple<int64_t, int64_t, double>;
@@ -111,36 +126,42 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
         mm_reset(s, a, b, c);
     }
 
+    double base_sum = 0.0;
     // base-line
     for(int64_t i = 0; i < nitr; ++i)
     {
+        mm_reset(s, a, b, c);
         double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
         double t_end  = wtime();
         double t_diff = t_end - t_beg;
+        base_sum += mm_sum(s, a);
 
         data += entry_t(0, inst_count, t_diff);
     }
     data /= std::tuple<int64_t, int64_t>(0, nitr);
 
+    double inst_sum = 0.0;
     // with instrumentation
     for(int64_t i = 0; i < nitr; ++i)
     {
+        mm_reset(s, a, b, c);
         double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
-#if !defined(USE_INST)
-            inst_count += mm(s, a, b, c);
-#else
             inst_count += mm_inst(s, a, b, c);
-#endif
         double t_end  = wtime();
         double t_diff = t_end - t_beg;
+        inst_sum += mm_sum(s, a);
 
         data += entry_t(i + 1, inst_count, t_diff);
     }
+
+    if(abs(base_sum - inst_sum) > 1.0e-9)
+        fprintf(stderr, "Error! Baseline result != instrumentation result: %f vs. %f",
+                base_sum, inst_sum);
 
     return data;
 }

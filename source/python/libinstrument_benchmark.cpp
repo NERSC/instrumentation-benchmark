@@ -60,6 +60,9 @@
 #include "instrumentation.h"
 #include "instrumentation.hpp"
 
+// provides instrumentation definitions if not
+#include "fallback_inst.h"
+
 namespace py   = pybind11;
 using string_t = std::string;
 
@@ -116,6 +119,8 @@ PYBIND11_MODULE(INST_MODULE_NAME, inst)
     //----------------------------------------------------------------------------------//
 
     auto execute_matmul = [&](int64_t s, int64_t max, int64_t nitr, std::string lang) {
+        INSTRUMENT_CONFIGURE();
+
         for(auto& itr : lang)
             itr = tolower(itr);
 
@@ -147,6 +152,8 @@ PYBIND11_MODULE(INST_MODULE_NAME, inst)
 
     auto execute_fibonacci = [&](int64_t nfib, int64_t cutoff, int64_t nitr,
                                  std::string lang) {
+        INSTRUMENT_CONFIGURE();
+
         for(auto& itr : lang)
             itr = tolower(itr);
 

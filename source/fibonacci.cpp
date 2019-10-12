@@ -154,7 +154,6 @@ launch(const int64_t& nitr, const int64_t& nfib, const int64_t& cutoff,
 cxx_runtime_data
 cxx_execute_fibonacci(int64_t nfib, int64_t cutoff, int64_t nitr)
 {
-    INSTRUMENT_CONFIGURE();
     cxx_runtime_data data(nitr + 1);
 
     std::cout << "\nRunning " << nitr << " iterations of fib(n = " << nfib
@@ -165,17 +164,11 @@ cxx_execute_fibonacci(int64_t nfib, int64_t cutoff, int64_t nitr)
     std::cout << "[warmup] fibonacci(" << nfib << ") = " << std::get<0>(warmup)
               << std::endl;
 
-#if !defined(USE_INST)
-    using inst_mode = mode::none;
-#else
-    using inst_mode = mode::inst;
-#endif
-
     //----------------------------------------------------------------------------------//
     //      run baseline and instruction mode
     //----------------------------------------------------------------------------------//
     auto ans_none = launch<mode::none>(nitr, nfib, nfib, data, 0);
-    auto ans_inst = launch<inst_mode>(nitr, nfib, cutoff, data, 1);
+    auto ans_inst = launch<mode::inst>(nitr, nfib, cutoff, data, 1);
 
     // we need to use these values so they don't get optimized away
     if(ans_none != ans_inst)
