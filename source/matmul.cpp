@@ -105,7 +105,7 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     using ivec_t  = std::vector<int64_t>;
     using entry_t = std::tuple<int64_t, int64_t, double>;
 
-    printf("Running %" PRId64 " MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
+    printf("\nRunning %" PRId64 " MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
     auto _a = dvec_t(s * s, 0.0);
     auto _b = dvec_t(s * s, 0.0);
     auto _c = dvec_t(s * s, 0.0);

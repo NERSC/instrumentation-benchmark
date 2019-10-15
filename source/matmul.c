@@ -103,7 +103,7 @@ mm_reset(int64_t s, double* a, double* b, double* c)
 c_runtime_data
 c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
 {
-    printf("Running %" PRId64 " MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
+    printf("\nRunning %" PRId64 " MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
     double* a = (double*) malloc(s * s * sizeof(double));
     double* b = (double*) malloc(s * s * sizeof(double));
     double* c = (double*) malloc(s * s * sizeof(double));

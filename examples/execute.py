@@ -9,12 +9,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-lout = open('log.txt', 'w')
+lout = None
 
 
 def lprint(message):
     print("{}".format(message))
-    lout.write("{}\n".format(message))
+    if lout is not None:
+        lout.write("{}\n".format(message))
 
 
 def plot(x, y, yerr, label, fname):
@@ -125,6 +126,9 @@ if __name__ == "__main__":
                         default=23, help="Fibonacci cutoff")
 
     args = parser.parse_args()
+
+    # log file
+    lout = open("{}.txt".format(args.prefix.strip('_')), 'w')
 
     m_N = args.size         # matrix size is N x N
     m_I = args.iterations   # number of iterations per timing entry
