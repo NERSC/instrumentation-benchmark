@@ -118,7 +118,7 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--size", type=int,
                         default=100, help="Matrix size (N x N)")
     parser.add_argument("-e", "--entries", type=int,
-                        default=100, help="Number of timing entries")
+                        default=50, help="Number of timing entries")
     # specific to FIBONACCI
     parser.add_argument("-f", "--fibonacci", type=int,
                         default=43, help="Fibonacci value")
