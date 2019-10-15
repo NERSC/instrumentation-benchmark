@@ -170,7 +170,6 @@ foreach(_MODULE ${INST_MODULE_NAMES})
     if(NOT _IS_REF)
         list(APPEND _INTERFACE_LIBS instrument-enabled)
     endif()
-    message(STATUS "${_MODULE} is reference: ${_IS_REF}")
 
     list(REMOVE_DUPLICATES _INTERFACE_LIBS)
     message(STATUS "${_MODULE} interface libraries: ${_INTERFACE_LIBS}")
@@ -310,3 +309,6 @@ endforeach()
 
 configure_file(${PROJECT_SOURCE_DIR}/examples/execute.py
     ${CMAKE_BINARY_DIR}/execute.py COPYONLY)
+
+configure_file(${PROJECT_SOURCE_DIR}/examples/execute.sh
+    ${CMAKE_BINARY_DIR}/execute.sh COPYONLY)

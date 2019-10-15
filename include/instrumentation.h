@@ -53,7 +53,6 @@ extern "C"
         int64_t* inst_count;
         double*  timing;
         double*  inst_per_sec;
-        double*  overhead;
     } c_runtime_data;
 
     //--------------------------------------------------------------------------------------//
@@ -68,12 +67,10 @@ extern "C"
         data->inst_count   = (int64_t*) malloc(nentries * sizeof(int64_t));
         data->timing       = (double*) malloc(nentries * sizeof(double));
         data->inst_per_sec = (double*) malloc(nentries * sizeof(double));
-        data->overhead     = (double*) malloc(nentries * sizeof(double));
 
         memset(data->inst_count, 0, nentries * sizeof(int64_t));
         memset(data->timing, 0, nentries * sizeof(double));
         memset(data->inst_per_sec, 0, nentries * sizeof(double));
-        memset(data->overhead, 0, nentries * sizeof(double));
     }
 
     //--------------------------------------------------------------------------------------//
@@ -83,7 +80,6 @@ extern "C"
         free(data.inst_count);
         free(data.timing);
         free(data.inst_per_sec);
-        free(data.overhead);
     }
 
     //--------------------------------------------------------------------------------------//

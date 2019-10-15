@@ -114,34 +114,18 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     auto b = _b.data();
     auto c = _c.data();
 
-    cxx_runtime_data data(nitr + 1);
-
-    mm_reset(s, a, b, c);
-
-    // warm-up
-    {
-        int64_t inst_count = 0;
-        for(int64_t iter = 0; iter < imax; iter++)
-            inst_count += mm(s, a, b, c);
-        mm_reset(s, a, b, c);
-    }
+    cxx_runtime_data data(nitr);
 
     double base_sum = 0.0;
-    // base-line
+    // base-line and warm-up
     for(int64_t i = 0; i < nitr; ++i)
     {
         mm_reset(s, a, b, c);
-        double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
-        double t_end  = wtime();
-        double t_diff = t_end - t_beg;
         base_sum += mm_sum(s, a);
-
-        data += entry_t(0, inst_count, t_diff);
     }
-    data /= std::tuple<int64_t, int64_t>(0, nitr);
 
     double inst_sum = 0.0;
     // with instrumentation
@@ -155,8 +139,7 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
         double t_end  = wtime();
         double t_diff = t_end - t_beg;
         inst_sum += mm_sum(s, a);
-
-        data += entry_t(i + 1, inst_count, t_diff);
+        data += entry_t(i, inst_count, t_diff);
     }
 
     if(abs(base_sum - inst_sum) > 1.0e-9)

@@ -118,7 +118,7 @@ run(int64_t n, int64_t cutoff)
 template <typename _Tp>
 int64_t
 launch(const int64_t& nitr, const int64_t& nfib, const int64_t& cutoff,
-       cxx_runtime_data& data, int64_t idx_mult)
+       cxx_runtime_data& data, bool record)
 {
     using entry_t = std::tuple<int64_t, int64_t, double>;
 
@@ -131,12 +131,9 @@ launch(const int64_t& nitr, const int64_t& nfib, const int64_t& cutoff,
     {
         auto&& ret = run<_Tp>(nfib, cutoff);
         ans_run += std::get<0>(ret);
-        auto idx = (i + 1) * idx_mult;
-        data += entry_t(idx, inst_count, std::get<1>(ret));
+        if(record)
+            data += entry_t(i, inst_count, std::get<1>(ret));
     }
-
-    if(std::is_same<_Tp, mode::none>::value && idx_mult == 0)
-        data /= std::tuple<int64_t, int64_t>(0, nitr);
 
     // we need to use these values so they don't get optimized away
     if(ans_count != ans_run)
@@ -154,21 +151,17 @@ launch(const int64_t& nitr, const int64_t& nfib, const int64_t& cutoff,
 cxx_runtime_data
 cxx_execute_fibonacci(int64_t nfib, int64_t cutoff, int64_t nitr)
 {
-    cxx_runtime_data data(nitr + 1);
+    cxx_runtime_data data(nitr);
 
     std::cout << "\nRunning " << nitr << " iterations of fib(n = " << nfib
-              << ", cutoff = " << cutoff << ")...\n"
-              << std::endl;
-
-    auto warmup = run<mode::none>(nfib, nfib);
-    std::cout << "[warmup] fibonacci(" << nfib << ") = " << std::get<0>(warmup)
+              << ", cutoff = " << cutoff << ")..."
               << std::endl;
 
     //----------------------------------------------------------------------------------//
-    //      run baseline and instruction mode
+    //      run baseline (warm-up) and instruction mode
     //----------------------------------------------------------------------------------//
-    auto ans_none = launch<mode::none>(nitr, nfib, nfib, data, 0);
-    auto ans_inst = launch<mode::inst>(nitr, nfib, cutoff, data, 1);
+    auto ans_none = launch<mode::none>(nitr, nfib, nfib, data, false);
+    auto ans_inst = launch<mode::inst>(nitr, nfib, cutoff, data, true);
 
     // we need to use these values so they don't get optimized away
     if(ans_none != ans_inst)

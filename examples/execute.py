@@ -9,6 +9,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+lout = open('log.txt', 'w')
+
+
+def lprint(message):
+    print("{}".format(message))
+    lout.write("{}\n".format(message))
+
+
 def plot(x, y, yerr, label, fname):
     fig = plt.figure(figsize=(1600 / 75, 800 / 75), dpi=75)
     ax = fig.add_subplot(111)
@@ -32,77 +40,89 @@ def plot(x, y, yerr, label, fname):
     # plt.show()
 
 
-def print_info(results, label, chunk_size=5):
+def print_info(results, label, chunk_size=5, baseline=None):
 
-    nchunk = (len(results.timing()) - 1) / chunk_size
-    nmodulo = (len(results.timing()) - 1) % chunk_size
-    nitr = int(nchunk + 1 if nmodulo > 0 else nchunk)
+    ntimes = len(results.timing())
+    nchunk = ntimes / chunk_size
+    modulo = ntimes % chunk_size
+    nitr = int(nchunk + 1 if modulo > 0 else nchunk)
     _time = ""
     _over = ""
     _inst = ""
-    for i in range(nitr+1):
-        if i == 0:
-            beg = 0
-            end = 1
-        else:
-            beg = (i - 1) * chunk_size + 1
-            end = i * chunk_size + 1
-        if end > len(results.timing()):
-            end = len(results.timing())
-        _rtime = results.timing()[beg:end]
-        _rover = results.overhead()[beg:end]
-        _rinst = results.inst_count()[beg:end]
+    _ftime = results.timing()
+    _finst = results.inst_count()
+    _fover = results.overhead(baseline)
+    for i in range(nitr):
+        beg = i * chunk_size
+        end = (i + 1) * chunk_size
+        if end > ntimes:
+            end = ntimes
+        _rtime = _ftime[beg:end]
+        _rover = _fover[beg:end]
+        _rinst = _finst[beg:end]
         _t = ", ".join(["{:10.3e}".format(i) for i in _rtime])
         _o = ", ".join(["{:10.3e}".format(i) for i in _rover])
         _i = ", ".join(["{:10}".format(i) for i in _rinst])
-        if i > 0:
+        if i == 0:
+            _time = "{}".format(_t)
+            _over = "{}".format(_o)
+            _inst = "{}".format(_i)
+        else:
             _time = "{}\n\t{:23}{}".format(_time, "", _t)
             _over = "{}\n\t{:23}{}".format(_over, "", _o)
             _inst = "{}\n\t{:23}{}".format(_inst, "", _i)
-        else:
-            _time = "{}  {:>10}".format(_t, "baseline")
-            _over = "{}  {:>10}".format(_o, "baseline")
-            _inst = "{}  {:>10}".format(_i, "baseline")
+
     _time = _time.strip("\n")
     _over = _over.strip("\n")
     _inst = _inst.strip("\n")
-    _ftime = results.timing()[1:]
-    _fover = results.overhead()[1:]
 
-    print("\n{}".format(label))
-    print("\t{:20} : {:10}".format("entries", results.entries()))
-    print("")
-    print("\t{:20} : {}".format("instrument (count)", _inst))
-    print("")
-    print("\t{:20} : {}".format("runtime (sec)", _time))
-    print("")
-    print("\t{:20} : {}".format("overhead (sec)", _over))
-    print("")
-    print("\t{:20} : {:10.3e}".format("runtime (mean)", mean(_ftime)))
-    print("\t{:20} : {:10.3e}".format("runtime (stdev)", stdev(_ftime)))
-    print("\t{:20} : {:10.3e}".format("overhead (mean)", mean(_fover)))
-    print("\t{:20} : {:10.3e}".format("overhead (stdev)", stdev(_fover)))
+    lprint("\n{}:\n".format(label))
+    lprint("\t{:20} : {:10}".format("entries", results.entries()))
+    lprint("")
+    lprint("\t{:20} : {}".format("instrument (count)", _inst))
+    lprint("")
+    lprint("\t{:20} : {}".format("runtime (sec)", _time))
+    lprint("")
+    lprint("\t{:20} : {}".format("overhead (sec)", _over))
+    lprint("")
+    lprint("\t{:20} : {:10.3e}".format("runtime (mean)", mean(_ftime)))
+    lprint("\t{:20} : {:10.3e}".format("runtime (stdev)", stdev(_ftime)))
+    lprint("\t{:20} : {:10.3e}".format("overhead (mean)", mean(_fover)))
+    lprint("\t{:20} : {:10.3e}".format("overhead (stdev)", stdev(_fover)))
     return {"runtime": [mean(_ftime), stdev(_ftime)],
             "overhead": [mean(_fover), stdev(_fover)]}
 
 
 if __name__ == "__main__":
 
+    submodules = sorted(bench.submodules)
+    if len(submodules) == 0:
+        raise RuntimeError("No submodules!")
+
+    default_baseline = "baseline" if "baseline" in submodules else submodules[0]
+
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-n", "--size", type=int,
-                        default=100, help="Matrix size (N x N)")
+    parser.add_argument("-p", "--prefix", type=str, default="DISABLED")
+    parser.add_argument("-m", "--modes", type=str, nargs='*',
+                        default=["fibonacci", "matrix"], choices=["fibonacci", "matrix"])
+    parser.add_argument("-l", "--languages", type=str, choices=["c", "cxx"],
+                        default=["c", "cxx"], nargs='*')
+    parser.add_argument("-b", "--baseline", type=str, choices=submodules,
+                        default=default_baseline, required=False,
+                        help="Compute overhead w.r.t. to this submodule measurement")
     parser.add_argument("-i", "--iterations", type=int, default=50,
                         help="Number of iterations per timing entry")
+    # specific to MATMUL
+    parser.add_argument("-n", "--size", type=int,
+                        default=100, help="Matrix size (N x N)")
     parser.add_argument("-e", "--entries", type=int,
-                        default=250, help="Number of timing entries")
+                        default=100, help="Number of timing entries")
+    # specific to FIBONACCI
     parser.add_argument("-f", "--fibonacci", type=int,
                         default=43, help="Fibonacci value")
     parser.add_argument("-c", "--cutoff", type=int,
                         default=23, help="Fibonacci cutoff")
-    parser.add_argument("-m", "--modes", type=str, nargs='*',
-                        default=["fibonacci", "matrix"], choices=["fibonacci", "matrix"])
-    parser.add_argument("-p", "--prefix", type=str, default="DISABLED")
 
     args = parser.parse_args()
 
@@ -119,14 +139,23 @@ if __name__ == "__main__":
     mtx_over_data = {"y": [], "yerr": []}
     fib_over_data = {"y": [], "yerr": []}
 
+    # calculate the baseline first
+    submodules.remove(args.baseline)
+    submodules = [args.baseline] + submodules
+
     if "matrix" in args.modes:
-        for lang in ["c", "cxx"]:
-            for submodule in sorted(bench.submodules):
+        for lang in args.languages:
+            baseline = None
+            for submodule in submodules:
+                key = "[{}]> {}_{}".format(
+                    lang.upper(), "MATMUL", submodule.upper())
+                lprint("Executing {}...".format(key))
                 ret = getattr(bench, submodule).matmul(m_N, m_E, m_I, lang)
                 if ret is not None:
-                    data = print_info(ret, "[{}]> {}_{}".format(
-                        lang.upper(), "MATMUL", submodule.upper()))
-                    print("")  # spacing
+                    if baseline is None:
+                        baseline = ret
+                    data = print_info(ret, key, baseline=baseline)
+                    lprint("")  # spacing
                     module = submodule.upper()
                     mtx_keys += ["{}_MATMUL_{}".format(lang.upper(), module)]
                     mtx_time_data["y"] += [data["runtime"][0]]
@@ -145,13 +174,17 @@ if __name__ == "__main__":
              "{}_MATMUL_OVERHEAD.png".format(args.prefix.upper()))
 
     if "fibonacci" in args.modes:
-        for lang in ["c", "cxx"]:
-            for submodule in sorted(bench.submodules):
+        for lang in args.languages:
+            for submodule in submodules:
+                key = "[{}]> {}_{}".format(
+                    lang.upper(), "FIBONACCI", submodule.upper())
+                lprint("Executing {}...".format(key))
                 ret = getattr(bench, submodule).fibonacci(m_F, m_C, m_I, lang)
                 if ret is not None:
-                    data = print_info(ret, "[{}]> {}_{}".format(
-                        lang.upper(), "FIBONACCI", submodule.upper()))
-                    print("")  # spacing
+                    if baseline is None:
+                        baseline = ret
+                    data = print_info(ret, key, baseline=baseline)
+                    lprint("")  # spacing
                     module = submodule.upper()
                     fib_keys += ["{}_FIB_{}".format(lang.upper(), module)]
                     fib_time_data["y"] += [data["runtime"][0]]
@@ -168,3 +201,5 @@ if __name__ == "__main__":
              fib_over_data["yerr"], "Fibonacci({}, {}) Overhead".format(
                  m_F, m_C),
              "{}_FIBONACCI_OVERHEAD.png".format(args.prefix.upper().strip("_")))
+
+    lout.close()

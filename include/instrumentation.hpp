@@ -53,13 +53,12 @@ struct cxx_runtime_data
     using dvec_t   = std::vector<double>;
     using ivec_t   = std::vector<int64_t>;
     using entry_t  = std::tuple<int64_t, int64_t, double>;
-    using result_t = std::tuple<int64_t, int64_t, double, double, double>;
+    using result_t = std::tuple<int64_t, int64_t, double, double>;
 
     int64_t entries = 0;
     ivec_t  inst_count;
     dvec_t  timing;
     dvec_t  inst_per_sec;
-    dvec_t  overhead;
 
     cxx_runtime_data()                        = default;
     ~cxx_runtime_data()                       = default;
@@ -73,7 +72,6 @@ struct cxx_runtime_data
     , inst_count(ivec_t(entries, 0))
     , timing(dvec_t(entries, 0.0))
     , inst_per_sec(dvec_t(entries, 0.0))
-    , overhead(dvec_t(entries, 0.0))
     {
     }
 
@@ -85,7 +83,6 @@ struct cxx_runtime_data
             inst_count[idx] /= std::get<1>(_div);
             timing[idx] /= std::get<1>(_div);
             inst_per_sec[idx] /= std::get<1>(_div);
-            overhead[idx] /= std::get<1>(_div);
         }
         return *this;
     }
@@ -97,15 +94,6 @@ struct cxx_runtime_data
         timing[idx] += std::get<2>(_entry);
         inst_per_sec[idx] +=
             static_cast<double>(std::get<1>(_entry)) / std::get<2>(_entry);
-        if(idx == 0)
-            overhead[idx] = 0.0;
-        else
-        {
-            auto _inst_count = std::get<1>(_entry);
-            if(_inst_count != 0)
-                overhead[idx] += (std::get<2>(_entry) - timing[0]) /
-                                 (static_cast<double>(_inst_count));
-        }
         return *this;
     }
 
@@ -115,9 +103,6 @@ struct cxx_runtime_data
         inst_count[idx]   = std::get<1>(_result);
         timing[idx]       = std::get<2>(_result);
         inst_per_sec[idx] = std::get<3>(_result);
-        overhead[idx]     = std::get<4>(_result);
-        if(inst_count[idx] < 0)
-            inst_count[idx] = 0;
         return *this;
     }
 };

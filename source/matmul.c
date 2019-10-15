@@ -109,40 +109,20 @@ c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     double* c = (double*) malloc(s * s * sizeof(double));
 
     c_runtime_data data;
-    init_runtime_data(nitr + 1, &data);
+    init_runtime_data(nitr, &data);
 
     mm_reset(s, a, b, c);
 
-    // warm-up
-    {
-        int64_t inst_count = 0;
-        for(int64_t iter = 0; iter < imax; iter++)
-            inst_count += mm(s, a, b, c);
-        mm_reset(s, a, b, c);
-    }
-
     double base_sum = 0.0;
-    // base-line
+    // base-line and warm-up
     for(int64_t i = 0; i < nitr; ++i)
     {
         mm_reset(s, a, b, c);
-        double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
-        double t_end  = wtime();
-        double t_diff = t_end - t_beg;
         base_sum += mm_sum(s, a);
-
-        data.inst_count[0] += inst_count;
-        data.timing[0] += t_diff;
-        data.inst_per_sec[0] += ((double) inst_count) / t_diff;
-        data.overhead[0] = 0.0;
     }
-
-    data.inst_count[0] /= nitr;
-    data.timing[0] /= nitr;
-    data.inst_per_sec[0] /= nitr;
 
     double inst_sum = 0.0;
     // with instrumentation
@@ -157,15 +137,9 @@ c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
         double t_diff = t_end - t_beg;
         inst_sum += mm_sum(s, a);
 
-        int idx                = i + 1;
-        data.inst_count[idx]   = inst_count;
-        data.timing[idx]       = t_diff;
-        data.inst_per_sec[idx] = ((double) inst_count) / t_diff;
-
-        if(inst_count != 0)
-            data.overhead[idx] = ((t_diff - data.timing[0]) / ((double) inst_count));
-        else
-            data.overhead[idx] = 0.0;
+        data.inst_count[i]   = inst_count;
+        data.timing[i]       = t_diff;
+        data.inst_per_sec[i] = ((double) inst_count) / t_diff;
     }
 
     free(a);
