@@ -179,6 +179,7 @@ if __name__ == "__main__":
 
     if "fibonacci" in args.modes:
         for lang in args.languages:
+            baseline = None
             for submodule in submodules:
                 key = "[{}]> {}_{}".format(
                     lang.upper(), "FIBONACCI", submodule.upper())

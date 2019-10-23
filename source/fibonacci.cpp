@@ -154,8 +154,7 @@ cxx_execute_fibonacci(int64_t nfib, int64_t cutoff, int64_t nitr)
     cxx_runtime_data data(nitr);
 
     std::cout << "\nRunning " << nitr << " iterations of fib(n = " << nfib
-              << ", cutoff = " << cutoff << ")..."
-              << std::endl;
+              << ", cutoff = " << cutoff << ")..." << std::endl;
 
     //----------------------------------------------------------------------------------//
     //      run baseline (warm-up) and instruction mode

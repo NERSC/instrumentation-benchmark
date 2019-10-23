@@ -57,6 +57,8 @@
 
 #include <string>
 
+#include "@SUBMODULE_HEADER_FILE@"
+
 #include "instrumentation.h"
 #include "instrumentation.hpp"
 

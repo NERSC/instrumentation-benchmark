@@ -21,25 +21,14 @@
 // SOFTWARE.
 
 #if defined(__cplusplus)
-#    include <iostream>
-#    include <string>
-#    include <timemory/timemory.hpp>
+#    include <cstdint>
 #else
 #    include <stdint.h>
 #endif
 
 #include <timemory/library.h>
 
-#if defined(__cplusplus)
-#    define INSTRUMENT_CONFIGURE()                                                       \
-        {                                                                                \
-            timemory_set_default("wall_clock");                                          \
-            tim::complete_list_t::get_initializer(tim::complete_list_t& al) = []() {};   \
-        }
-#else
-#    define INSTRUMENT_CONFIGURE()
-#endif
-
+#define INSTRUMENT_CONFIGURE() timemory_set_default("wall_clock");
 #define INSTRUMENT_CREATE(...) uint64_t inst_id;
 #define INSTRUMENT_START(name) timemory_begin_record(__FUNCTION__, &inst_id);
 #define INSTRUMENT_STOP(...) timemory_end_record(inst_id);

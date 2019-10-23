@@ -25,16 +25,7 @@
 
 #include <timemory/ctimemory.h>
 
-#if defined(__cplusplus)
-#    include <timemory/timemory.hpp>
-#    define INSTRUMENT_CONFIGURE()                                                       \
-        {                                                                                \
-            tim::complete_list_t::get_initializer(tim::complete_list_t& al) = []() {};   \
-        }
-#else
-#    define INSTRUMENT_CONFIGURE()
-#endif
-
+#define INSTRUMENT_CONFIGURE()
 #define INSTRUMENT_CREATE(...)
 #define INSTRUMENT_START(name) void* timer = TIMEMORY_BASIC_MARKER("", WALL_CLOCK);
 #define INSTRUMENT_STOP(name) FREE_TIMEMORY_MARKER(timer);

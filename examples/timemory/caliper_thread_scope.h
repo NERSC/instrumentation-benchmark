@@ -29,7 +29,7 @@
 
 #include <caliper/cali.h>
 
-#define INSTRUMENT_CONFIGURE()
+#define INSTRUMENT_CONFIGURE() cali_init();
 #define INSTRUMENT_CREATE(...)                                                           \
     cali_id_t _id = cali_create_attribute("inst", CALI_TYPE_STRING,                      \
                                           CALI_ATTR_NESTED | CALI_ATTR_SCOPE_THREAD);
