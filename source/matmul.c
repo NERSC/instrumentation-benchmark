@@ -32,6 +32,8 @@
 // provides structures for returning data to python
 #include "instrumentation.h"
 
+#include <math.h>
+
 //--------------------------------------------------------------------------------------//
 
 // returns number of instrumentations triggered
@@ -46,7 +48,7 @@ mm(int64_t s, double* a, double* b, double* c)
                 a[i * s + j] += b[i * s + k] * c[k * s + j];
         }
     }
-    return s * s;
+    return 0;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -59,17 +61,27 @@ mm_inst(int64_t s, double* a, double* b, double* c)
     {
         for(int64_t j = 0; j < s; j++)
         {
-            char buf[32];
-            sprintf(buf, "%" PRId64, j);
-
-            INSTRUMENT_CREATE(buf);
-            INSTRUMENT_START(buf);
+            INSTRUMENT_CREATE(j);
+            INSTRUMENT_START(j);
             for(int64_t k = 0; k < s; k++)
                 a[i * s + j] += b[i * s + k] * c[k * s + j];
-            INSTRUMENT_STOP(buf);
+            INSTRUMENT_STOP(j);
         }
     }
     return s * s;
+}
+
+//--------------------------------------------------------------------------------------//
+
+// returns sum of a
+double
+mm_sum(int64_t s, double* a)
+{
+    double sum = 0.0;
+    for(int64_t i = 0; i < s; i++)
+        for(int64_t j = 0; j < s; j++)
+            sum += a[i * s + j];
+    return sum;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -79,7 +91,11 @@ mm_reset(int64_t s, double* a, double* b, double* c)
 {
     for(int64_t i = 0; i < s; i++)
         for(int64_t j = 0; j < s; j++)
-            a[i * s + j] = b[i * s + j] = c[i * s + j] = 1.0;
+        {
+            a[i * s + j] = 0.0;
+            b[i * s + j] = 1.0;
+            c[i * s + j] = 2.0;
+        }
 }
 
 //--------------------------------------------------------------------------------------//
@@ -87,70 +103,52 @@ mm_reset(int64_t s, double* a, double* b, double* c)
 c_runtime_data
 c_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
 {
-    printf("Running %" PRId64 " a MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
+    printf("\nRunning %" PRId64 " MM on %" PRId64 " x %" PRId64 "\n", imax, s, s);
     double* a = (double*) malloc(s * s * sizeof(double));
     double* b = (double*) malloc(s * s * sizeof(double));
     double* c = (double*) malloc(s * s * sizeof(double));
 
-    int64_t        nentries = nitr + 1;
-    c_runtime_data data     = { nentries, NULL, NULL, NULL, NULL };
-    data.inst_count         = (int64_t*) malloc(nentries * sizeof(int64_t));
-    data.timing             = (double*) malloc(nentries * sizeof(double));
-    data.inst_per_sec       = (double*) malloc(nentries * sizeof(double));
-    data.overhead           = (double*) malloc(nentries * sizeof(double));
+    c_runtime_data data;
+    init_runtime_data(nitr, &data);
 
     mm_reset(s, a, b, c);
 
-    // warm-up
-    {
-        int64_t inst_count = 0;
-        for(int64_t iter = 0; iter < imax; iter++)
-            inst_count += mm(s, a, b, c);
-        mm_reset(s, a, b, c);
-    }
-
-    // base-line
+    double base_sum = 0.0;
+    // base-line and warm-up
     for(int64_t i = 0; i < nitr; ++i)
     {
-        double  t1         = wtime();
+        mm_reset(s, a, b, c);
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
-        double tdiff = wtime() - t1;
-
-        int idx = 0;
-        data.inst_count[idx] += inst_count;
-        data.timing[idx] += tdiff;
-        data.inst_per_sec[idx] += ((double) inst_count) / tdiff;
-        data.overhead[idx] = 0.0;
-
-        if(i + 1 == nitr)
-        {
-            data.inst_count[idx] /= nitr;
-            data.timing[idx] /= nitr;
-            data.inst_per_sec[idx] /= nitr;
-        }
+        base_sum += mm_sum(s, a);
     }
 
+    double inst_sum = 0.0;
     // with instrumentation
     for(int64_t i = 0; i < nitr; ++i)
     {
-        double  t1         = wtime();
+        mm_reset(s, a, b, c);
+        double  t_beg      = wtime();
         int64_t inst_count = 0;
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm_inst(s, a, b, c);
-        double tdiff = wtime() - t1;
+        double t_end  = wtime();
+        double t_diff = t_end - t_beg;
+        inst_sum += mm_sum(s, a);
 
-        int idx                = i + 1;
-        data.inst_count[idx]   = inst_count;
-        data.timing[idx]       = tdiff;
-        data.inst_per_sec[idx] = ((double) inst_count) / tdiff;
-        data.overhead[idx]     = ((tdiff - data.timing[0]) / ((double) inst_count));
+        data.inst_count[i]   = inst_count;
+        data.timing[i]       = t_diff;
+        data.inst_per_sec[i] = ((double) inst_count) / t_diff;
     }
 
     free(a);
     free(b);
     free(c);
+
+    if(fabs(base_sum - inst_sum) > 1.0e-9)
+        fprintf(stderr, "Error! Baseline result != instrumentation result: %f vs. %f",
+                base_sum, inst_sum);
 
     return data;
 }

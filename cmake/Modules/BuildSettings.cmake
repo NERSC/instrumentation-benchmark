@@ -27,10 +27,10 @@ add_target_flag_if_avail(instrument-compile-options
     "-faligned-new")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    add_target_flag(instrument-compile-options "-DDEBUG")
+    target_compile_definitions(instrument-compile-options INTERFACE DEBUG)
 endif()
 
-add_target_flag(instrument-enabled "-DUSE_INST")
+target_compile_definitions(instrument-enabled INTERFACE USE_INST)
 
 #----------------------------------------------------------------------------------------#
 # user customization

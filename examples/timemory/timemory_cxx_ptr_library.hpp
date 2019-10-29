@@ -20,24 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-// configure tool before any tests are run
-#if !defined(INSTRUMENT_CONFIGURE)
-#    define INSTRUMENT_CONFIGURE()
+#if defined(__cplusplus)
+#    include <cstdint>
+#else
+#    include <stdint.h>
 #endif
 
-// create something if needed
-#if !defined(INSTRUMENT_CREATE)
-#    define INSTRUMENT_CREATE(...)
-#endif
+#include <timemory/library.h>
 
-// start tool as needed
-#if !defined(INSTRUMENT_START)
-#    define INSTRUMENT_START(...)
-#endif
-
-// stop tool as needed
-#if !defined(INSTRUMENT_STOP)
-#    define INSTRUMENT_STOP(...)
-#endif
+#define INSTRUMENT_CONFIGURE() timemory_set_default("wall_clock");
+#define INSTRUMENT_CREATE(...) uint64_t inst_id;
+#define INSTRUMENT_START(name) timemory_begin_record(__FUNCTION__, &inst_id);
+#define INSTRUMENT_STOP(...) timemory_end_record(inst_id);

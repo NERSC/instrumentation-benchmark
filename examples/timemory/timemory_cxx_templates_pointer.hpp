@@ -20,24 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include <iostream>
+#include <string>
 
-// configure tool before any tests are run
-#if !defined(INSTRUMENT_CONFIGURE)
-#    define INSTRUMENT_CONFIGURE()
-#endif
+#include <timemory/timemory.hpp>
 
-// create something if needed
-#if !defined(INSTRUMENT_CREATE)
-#    define INSTRUMENT_CREATE(...)
-#endif
+using namespace tim::component;
+// using auto_timer_t = tim::auto_tuple<wall_clock, cpu_clock, peak_rss>;
+// using auto_timer_t = tim::auto_timer;
+using auto_timer_t = tim::auto_tuple<wall_clock>;
 
-// start tool as needed
-#if !defined(INSTRUMENT_START)
-#    define INSTRUMENT_START(...)
-#endif
-
-// stop tool as needed
-#if !defined(INSTRUMENT_STOP)
-#    define INSTRUMENT_STOP(...)
-#endif
+#define INSTRUMENT_CONFIGURE()
+#define INSTRUMENT_CREATE(...)
+#define INSTRUMENT_START(name) TIMEMORY_BASIC_POINTER(auto_timer_t, "");
+#define INSTRUMENT_STOP(...)

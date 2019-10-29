@@ -37,3 +37,6 @@ CMakeLists.txt.user*
 
 # build directories
 /build*
+
+# Hidden files
+*.DS_Store

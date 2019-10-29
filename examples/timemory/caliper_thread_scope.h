@@ -20,24 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-// configure tool before any tests are run
-#if !defined(INSTRUMENT_CONFIGURE)
-#    define INSTRUMENT_CONFIGURE()
+#if defined(__cplusplus)
+#    include <iostream>
+#    include <string>
+#else
+#    include <stdint.h>
 #endif
 
-// create something if needed
-#if !defined(INSTRUMENT_CREATE)
-#    define INSTRUMENT_CREATE(...)
-#endif
+#include <caliper/cali.h>
 
-// start tool as needed
-#if !defined(INSTRUMENT_START)
-#    define INSTRUMENT_START(...)
-#endif
-
-// stop tool as needed
-#if !defined(INSTRUMENT_STOP)
-#    define INSTRUMENT_STOP(...)
-#endif
+#define INSTRUMENT_CONFIGURE() cali_init();
+#define INSTRUMENT_CREATE(...)                                                           \
+    cali_id_t _id = cali_create_attribute("inst", CALI_TYPE_STRING,                      \
+                                          CALI_ATTR_NESTED | CALI_ATTR_SCOPE_THREAD);
+#define INSTRUMENT_START(...) cali_begin_string(_id, __FUNCTION__);
+#define INSTRUMENT_STOP(...) cali_end(_id);

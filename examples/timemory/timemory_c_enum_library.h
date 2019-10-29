@@ -20,24 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include <stdio.h>
+#include <string.h>
 
-// configure tool before any tests are run
-#if !defined(INSTRUMENT_CONFIGURE)
-#    define INSTRUMENT_CONFIGURE()
-#endif
+#include <timemory/ctimemory.h>
 
-// create something if needed
-#if !defined(INSTRUMENT_CREATE)
-#    define INSTRUMENT_CREATE(...)
-#endif
-
-// start tool as needed
-#if !defined(INSTRUMENT_START)
-#    define INSTRUMENT_START(...)
-#endif
-
-// stop tool as needed
-#if !defined(INSTRUMENT_STOP)
-#    define INSTRUMENT_STOP(...)
-#endif
+#define INSTRUMENT_CONFIGURE()
+#define INSTRUMENT_CREATE(...)
+#define INSTRUMENT_START(name) void* timer = TIMEMORY_BASIC_MARKER("", WALL_CLOCK);
+#define INSTRUMENT_STOP(name) FREE_TIMEMORY_MARKER(timer);

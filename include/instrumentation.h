@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 
 #if !defined(__cplusplus)
@@ -52,12 +53,34 @@ extern "C"
         int64_t* inst_count;
         double*  timing;
         double*  inst_per_sec;
-        double*  overhead;
     } c_runtime_data;
 
     //--------------------------------------------------------------------------------------//
     /// execute a test
     c_runtime_data c_execute_matmul(int64_t s, int64_t max, int64_t nitr);
+
+    //--------------------------------------------------------------------------------------//
+
+    inline void init_runtime_data(int64_t nentries, c_runtime_data* data)
+    {
+        data->entries      = nentries;
+        data->inst_count   = (int64_t*) malloc(nentries * sizeof(int64_t));
+        data->timing       = (double*) malloc(nentries * sizeof(double));
+        data->inst_per_sec = (double*) malloc(nentries * sizeof(double));
+
+        memset(data->inst_count, 0, nentries * sizeof(int64_t));
+        memset(data->timing, 0, nentries * sizeof(double));
+        memset(data->inst_per_sec, 0, nentries * sizeof(double));
+    }
+
+    //--------------------------------------------------------------------------------------//
+
+    inline void free_runtime_data(c_runtime_data data)
+    {
+        free(data.inst_count);
+        free(data.timing);
+        free(data.inst_per_sec);
+    }
 
     //--------------------------------------------------------------------------------------//
 
