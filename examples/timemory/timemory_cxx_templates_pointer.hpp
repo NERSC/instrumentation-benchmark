@@ -26,11 +26,11 @@
 #include <timemory/timemory.hpp>
 
 using namespace tim::component;
-// using auto_timer_t = tim::auto_tuple<wall_clock, cpu_clock, peak_rss>;
-// using auto_timer_t = tim::auto_timer;
-using auto_timer_t = tim::auto_tuple<wall_clock>;
+// using toolset_t = tim::auto_tuple<wall_clock, cpu_clock, peak_rss>;
+// using toolset_t = tim::auto_timer;
+using toolset_t = tim::auto_tuple<wall_clock>;
 
 #define INSTRUMENT_CONFIGURE()
 #define INSTRUMENT_CREATE(...)
-#define INSTRUMENT_START(name) TIMEMORY_BASIC_POINTER(auto_timer_t, "");
+#define INSTRUMENT_START(name) TIMEMORY_BASIC_POINTER(toolset_t, "");
 #define INSTRUMENT_STOP(...)
