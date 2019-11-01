@@ -8,7 +8,6 @@ from statistics import mean, stdev
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 lout = None
 
 
@@ -19,7 +18,15 @@ def lprint(message):
 
 
 def plot(x, y, yerr, label, fname):
-    fig = plt.figure(figsize=(1600 / 75, 800 / 75), dpi=75)
+
+    font = {'family': 'serif',
+            'color':  'darkblue',
+            'weight': 'bold',
+            'size': 16,
+            }
+
+    dpi = 100
+    fig = plt.figure(figsize=(1600 / dpi, 800 / dpi), dpi=dpi)
     ax = fig.add_subplot(111)
     plt.title(label)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
@@ -27,13 +34,13 @@ def plot(x, y, yerr, label, fname):
     _max = 1.25 * max([abs(y[i]) + abs(yerr[i]) for i in range(len(y))])
     axes.set_ylim([-_max, _max])
     axes.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-    plt.errorbar(x, y, yerr=yerr, fmt='bo-', label=label)
-    plt.xticks(rotation=90, rotation_mode='anchor')
+    plt.errorbar(x, y, yerr=yerr, fmt='bD--', label=label)
+    plt.xticks(rotation=-45, rotation_mode='anchor', **font)
     # zip joins x and y coordinates in pairs
     for _x, _y in zip(x, y):
         _label = "{:8.3e}".format(_y)
         plt.annotate(_label, (_x, _y), textcoords="offset points",
-                     xytext=(0, 10), ha='center')
+                     xytext=(0, 10), ha='center', **font)
     box = ax.get_position()
     ax.set_position([box.x0, box.y0 + 0.15 * box.height,
                      box.width, 0.85 * box.height])
