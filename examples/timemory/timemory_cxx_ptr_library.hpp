@@ -30,5 +30,5 @@
 
 #define INSTRUMENT_CONFIGURE() timemory_set_default("wall_clock");
 #define INSTRUMENT_CREATE(...) uint64_t inst_id;
-#define INSTRUMENT_START(name) timemory_begin_record(__FUNCTION__, &inst_id);
+#define INSTRUMENT_START(...) timemory_begin_record(__FUNCTION__, &inst_id);
 #define INSTRUMENT_STOP(...) timemory_end_record(inst_id);
