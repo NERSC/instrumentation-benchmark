@@ -243,7 +243,7 @@ foreach(_MODULE ${INST_MODULE_NAMES})
     endforeach()
 
     pybind11_add_module(py-inst-bench-${_TARGET_MODULE} ${_PYTARG_SOURCES})
-    target_link_libraries(py-inst-bench-${_TARGET_MODULE} PRIVATE inst-bench-${_TARGET_MODULE})
+    target_link_libraries(py-inst-bench-${_TARGET_MODULE} PRIVATE inst-bench-${_TARGET_MODULE} ${_INTERFACE_LIBS})
     set_target_properties(py-inst-bench-${_TARGET_MODULE} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}
         LIBRARY_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}

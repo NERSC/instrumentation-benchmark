@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-: ${ARGS:="-i 25 -f 40 -c 15"}
+: ${ARGS:="-i 50 -f 40 -c 15"}
 
 rm -rf DISABLED* ENABLED_WALL_CLOCK* \
     timemory-enabled-wall-clock-output
