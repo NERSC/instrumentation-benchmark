@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <timemory/ctimemory.h>
+#include <timemory/timemory.h>
 
 #define INSTRUMENT_CONFIGURE()
 #define INSTRUMENT_CREATE(...)

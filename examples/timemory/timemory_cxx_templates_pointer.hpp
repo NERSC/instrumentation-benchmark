@@ -32,5 +32,5 @@ using toolset_t = tim::auto_tuple<wall_clock>;
 
 #define INSTRUMENT_CONFIGURE()
 #define INSTRUMENT_CREATE(...)
-#define INSTRUMENT_START(name) TIMEMORY_BASIC_POINTER(toolset_t, "");
+#define INSTRUMENT_START(...) TIMEMORY_BASIC_POINTER(toolset_t, "");
 #define INSTRUMENT_STOP(...)

@@ -15,6 +15,7 @@ def lprint(message):
     print("{}".format(message))
     if lout is not None:
         lout.write("{}\n".format(message))
+        lout.flush()
 
 
 def plot(x, y, yerr, label, fname):
@@ -154,12 +155,19 @@ if __name__ == "__main__":
     submodules.remove(args.baseline)
     submodules = [args.baseline] + submodules
 
+    def compute_key(module, lang, langs):
+        if len(langs) == 1:
+            return "{}".format(module.upper())
+        else:
+            return "{}_{}".format(lang.upper(), module.upper())
+
     if "matrix" in args.modes:
         for lang in args.languages:
             baseline = None
             for submodule in submodules:
-                key = "[{}]> {}_{}".format(
-                    lang.upper(), "MATMUL", submodule.upper())
+                prefix = "{}_MATMUL".format(args.prefix.upper())
+                key = "[{}]> {}_{}_{}".format(
+                    lang.upper(), args.prefix.upper(), "MATMUL", submodule.upper())
                 lprint("Executing {}...".format(key))
                 ret = getattr(bench, submodule).matmul(m_N, m_E, m_I, lang)
                 if ret is not None:
@@ -168,28 +176,30 @@ if __name__ == "__main__":
                     data = print_info(ret, key, baseline=baseline)
                     lprint("")  # spacing
                     module = submodule.upper()
-                    mtx_keys += ["{}_MATMUL_{}".format(lang.upper(), module)]
+                    mtx_keys += [compute_key(module, lang, args.languages)]
                     mtx_time_data["y"] += [data["runtime"][0]]
                     mtx_over_data["y"] += [data["overhead"][0]]
                     mtx_time_data["yerr"] += [data["runtime"][1]]
                     mtx_over_data["yerr"] += [data["overhead"][1]]
 
     if len(mtx_keys) > 0:
+        sargs = "[Iter = {}, Loops/Iter = {}]".format(m_I, m_E)
         plot(mtx_keys, mtx_time_data["y"],
-             mtx_time_data["yerr"], "Matrix Multiply ({} x {}) Runtime".format(
-                 m_N, m_N),
+             mtx_time_data["yerr"], "Matrix Multiply ({} x {}) Runtime {}".format(
+                 m_N, m_N, sargs),
              "{}_MATMUL_RUNTIME.png".format(args.prefix.upper()))
         plot(mtx_keys, mtx_over_data["y"],
-             mtx_over_data["yerr"], "Matrix Multiply  ({} x {}) Overhead".format(
-                 m_N, m_N),
+             mtx_over_data["yerr"], "Matrix Multiply  ({} x {}) Overhead {}".format(
+                 m_N, m_N, sargs),
              "{}_MATMUL_OVERHEAD.png".format(args.prefix.upper()))
 
     if "fibonacci" in args.modes:
         for lang in args.languages:
             baseline = None
             for submodule in submodules:
-                key = "[{}]> {}_{}".format(
-                    lang.upper(), "FIBONACCI", submodule.upper())
+                prefix = "{}_FIBONACCI".format(args.prefix.upper())
+                key = "[{}]> {}_{}_{}".format(
+                    lang.upper(), args.prefix.upper(), "FIBONACCI", submodule.upper())
                 lprint("Executing {}...".format(key))
                 ret = getattr(bench, submodule).fibonacci(m_F, m_C, m_I, lang)
                 if ret is not None:
@@ -198,20 +208,22 @@ if __name__ == "__main__":
                     data = print_info(ret, key, baseline=baseline)
                     lprint("")  # spacing
                     module = submodule.upper()
-                    fib_keys += ["{}_FIB_{}".format(lang.upper(), module)]
+                    fib_keys += [compute_key(module, lang, args.languages)]
                     fib_time_data["y"] += [data["runtime"][0]]
                     fib_over_data["y"] += [data["overhead"][0]]
                     fib_time_data["yerr"] += [data["runtime"][1]]
                     fib_over_data["yerr"] += [data["overhead"][1]]
 
     if len(fib_keys) > 0:
+        sargs = "[Iter = {}]".format(m_I)
         plot(fib_keys, fib_time_data["y"],
-             fib_time_data["yerr"], "Fibonacci({}, {}) Runtime".format(
-                 m_F, m_C),
+             fib_time_data["yerr"], "Fibonacci({}, {}) Runtime {}".format(
+                 m_F, m_C, sargs),
              "{}_FIBONACCI_RUNTIME.png".format(args.prefix.upper().strip("_")))
         plot(fib_keys, fib_over_data["y"],
-             fib_over_data["yerr"], "Fibonacci({}, {}) Overhead".format(
-                 m_F, m_C),
+             fib_over_data["yerr"], "Fibonacci({}, {}) Overhead {}".format(
+                 m_F, m_C, sargs),
              "{}_FIBONACCI_OVERHEAD.png".format(args.prefix.upper().strip("_")))
 
+    lout.flush()
     lout.close()
