@@ -1,6 +1,6 @@
 
 # common list of components
-set(_COMPONENTS headers c cxx compile-options arch papi caliper gperftools-cpu)
+set(_COMPONENTS headers c cxx compile-options arch papi)
 set(TIMEMORY_COMPONENTS "${_COMPONENTS}" CACHE STRING "timemory components")
 
 option(ENABLE_CALIPER "Enable Caliper benchmarking" OFF)
@@ -11,6 +11,9 @@ if(ENABLE_ANALYSIS)
 else()
     find_package(timemory REQUIRED COMPONENTS ${TIMEMORY_COMPONENTS})
 endif()
+
+set(timemory_FIND_COMPONENTS_INTERFACE timemory-templates)
+find_package(timemory REQUIRED COMPONENTS headers compile-options arch papi)
 
 add_library(timemory-config INTERFACE)
 target_link_libraries(timemory-config INTERFACE timemory)
@@ -31,6 +34,7 @@ if(ENABLE_ANALYSIS)
     )
 
 else()
+  
     define_submodule(
         NAME                library
         LANGUAGE            CXX
@@ -45,38 +49,41 @@ else()
         HEADER_FILE         timemory_c_enum_library.h
         INTERFACE_LIBRARY   timemory-config
     )
-    
+
     define_submodule(
         NAME                basic_marker
         LANGUAGE            CXX
         HEADER_FILE         timemory_cxx_templates.hpp
-        INTERFACE_LIBRARY   timemory-config
+        INTERFACE_LIBRARY   timemory-templates
     )
-    
+
     define_submodule(
         NAME                basic_pointer
         LANGUAGE            CXX
         HEADER_FILE         timemory_cxx_templates_pointer.hpp
-        INTERFACE_LIBRARY   timemory-config
+        INTERFACE_LIBRARY   timemory-templates
     )
+
 endif()
 
 if(ENABLE_CALIPER)
 
+    find_package(caliper REQUIRED)
+
     define_submodule(
-        NAME                cali_thread_scope
+        NAME                caliper_marker
         LANGUAGE            CXX
         HEADER_FILE         caliper_thread_scope.h
-        INTERFACE_LIBRARY   timemory-config timemory-caliper
+        INTERFACE_LIBRARY   caliper
         EXTRA_LANGUAGES     C
     )
 
-    define_submodule(
-        NAME                cali_process_scope
-        LANGUAGE            CXX
-        HEADER_FILE         caliper_process_scope.h
-        INTERFACE_LIBRARY   timemory-config timemory-caliper
-        EXTRA_LANGUAGES     C
-    )
+    # define_submodule(
+    #    NAME                cali_process_scope
+    #    LANGUAGE            CXX
+    #    HEADER_FILE         caliper_process_scope.h
+    #    INTERFACE_LIBRARY   caliper
+    #    EXTRA_LANGUAGES     C
+    #)
 
 endif()
