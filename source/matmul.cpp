@@ -122,8 +122,11 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     {
         mm_reset(s, a, b, c);
         int64_t inst_count = 0;
+        ANALYSIS_CREATE("matmul", i, nitr, s, s);
+        ANALYSIS_START("matmul", i, nitr, s, s);
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm(s, a, b, c);
+        ANALYSIS_STOP("matmul", i, nitr, s, s);
         base_sum += mm_sum(s, a);
     }
 
@@ -132,11 +135,14 @@ cxx_execute_matmul(int64_t s, int64_t imax, int64_t nitr)
     for(int64_t i = 0; i < nitr; ++i)
     {
         mm_reset(s, a, b, c);
-        double  t_beg      = wtime();
         int64_t inst_count = 0;
+        ANALYSIS_CREATE("matmul_inst", i, nitr, s, s);
+        ANALYSIS_START("matmul_inst", i, nitr, s, s);
+        double t_beg = wtime();
         for(int64_t iter = 0; iter < imax; iter++)
             inst_count += mm_inst(s, a, b, c);
-        double t_end  = wtime();
+        double t_end = wtime();
+        ANALYSIS_STOP("matmul_inst", i, nitr, s, s);
         double t_diff = t_end - t_beg;
         inst_sum += mm_sum(s, a);
         data += entry_t(i, inst_count, t_diff);

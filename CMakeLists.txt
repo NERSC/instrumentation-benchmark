@@ -153,6 +153,8 @@ foreach(_MODULE ${INST_MODULE_NAMES})
     get_cache_var(_INTERFACE    ${_MODULE} INTERFACE_LIBRARY)
     get_cache_var(_EXTRA_LANGS  ${_MODULE} EXTRA_LANGUAGES)
     get_cache_var(_IS_REF       ${_MODULE} IS_REFERENCE)
+    get_cache_var(_LINK_LIBS    ${_MODULE} LINK_LIBRARIES)
+    get_cache_var(_COMPILE_DEFS ${_MODULE} COMPILE_DEFINITIONS)
 
     string(REPLACE "_" "-" _TARGET_MODULE "${_MODULE}")
 
@@ -216,7 +218,9 @@ foreach(_MODULE ${INST_MODULE_NAMES})
     # create library
     add_library(inst-bench-${_TARGET_MODULE} SHARED ${_TARGET_SOURCES} ${_TARGET_HEADERS})
     target_link_libraries(inst-bench-${_TARGET_MODULE}
-        PUBLIC instrument-headers ${_INTERFACE_LIBS})
+        PUBLIC instrument-headers ${_INTERFACE_LIBS} ${_LINK_LIBS})
+    target_compile_definitions(inst-bench-${_TARGET_MODULE} PUBLIC
+        ${_COMPILE_DEFS})
     set_target_properties(inst-bench-${_TARGET_MODULE} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}
         LIBRARY_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}
@@ -243,7 +247,10 @@ foreach(_MODULE ${INST_MODULE_NAMES})
     endforeach()
 
     pybind11_add_module(py-inst-bench-${_TARGET_MODULE} ${_PYTARG_SOURCES})
-    target_link_libraries(py-inst-bench-${_TARGET_MODULE} PRIVATE inst-bench-${_TARGET_MODULE} ${_INTERFACE_LIBS})
+    target_link_libraries(py-inst-bench-${_TARGET_MODULE} PRIVATE
+        inst-bench-${_TARGET_MODULE} ${_INTERFACE_LIBS} ${_LINK_LIBS})
+    target_compile_definitions(py-inst-bench-${_TARGET_MODULE} PUBLIC
+        ${_COMPILE_DEFS})
     set_target_properties(py-inst-bench-${_TARGET_MODULE} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}
         LIBRARY_OUTPUT_DIRECTORY ${SUBMODULE_OUTPUT_PATH}

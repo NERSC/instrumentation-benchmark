@@ -127,9 +127,17 @@ launch(const int64_t& nitr, const int64_t& nfib, const int64_t& cutoff,
     auto    ans_count  = fib<mode::count>(nfib, cutoff) * nitr;
     int64_t inst_count = (nmeasure * nitr);
     int64_t ans_run    = 0;
+
+    std::string tag = "fibonacci";
+    if(!std::is_same<_Tp, mode::none>::value)
+        tag += "_inst";
+
     for(int i = 0; i < nitr; ++i)
     {
+        ANALYSIS_CREATE(tag.c_str(), i, nitr, nfib, cutoff);
+        ANALYSIS_START(tag.c_str(), i, nitr, nfib, cutoff);
         auto&& ret = run<_Tp>(nfib, cutoff);
+        ANALYSIS_STOP(tag.c_str(), i, nitr, nfib, cutoff);
         ans_run += std::get<0>(ret);
         if(record)
             data += entry_t(i, inst_count, std::get<1>(ret));

@@ -115,7 +115,7 @@ FUNCTION(DEFINE_SUBMODULE)
         MODULE
         "REFERENCE"
         "NAME;HEADER_FILE;INTERFACE_LIBRARY;LANGUAGE;LINKER_LANGUAGE"
-        "EXTRA_LANGUAGES"
+        "EXTRA_LANGUAGES;LINK_LIBRARIES;COMPILE_DEFINITIONS"
         ${ARGN})
 
     # check required variables
@@ -179,8 +179,10 @@ FUNCTION(DEFINE_SUBMODULE)
     set_cache_var(${_NAME} LINKER_LANGUAGE   "${MODULE_LINKER_LANGUAGE}"    "Linker Language for ${_NAME}")
     set_cache_var(${_NAME} IS_REFERENCE      "${MODULE_REFERENCE}"          "${_NAME} is reference target")
 
-    foreach(_EXTRA ${MODULE_EXTRA_LANGUAGES})
-        set_cache_var(${_NAME} EXTRA_LANGUAGES "${_EXTRA}" "Additional languages in ${_NAME}")
+    foreach(_CAT EXTRA_LANGUAGES COMPILE_DEFINITIONS LINK_LIBRARIES)
+        foreach(_ENTRY ${MODULE_${_CAT}})
+            set_cache_var(${_NAME} ${_CAT} "${_ENTRY}" "Additional ${_CAT} in ${_NAME}")
+        endforeach()
     endforeach()
 
 ENDFUNCTION()

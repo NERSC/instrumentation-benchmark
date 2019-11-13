@@ -14,6 +14,16 @@ CMAKE_DIR=${THIS_DIR}/../../cmake
 # echo "${INC_DIR}"
 # echo "${CMAKE_DIR}"
 
-cp ${THIS_DIR}/*.h ${INC_DIR}/
-cp ${THIS_DIR}/*.hpp ${INC_DIR}/
-cp ${THIS_DIR}/*.cmake ${CMAKE_DIR}/
+for i in ${THIS_DIR}/*.h ${THIS_DIR}/*.hpp
+do
+    ln -sf ../../${i} ${INC_DIR}/$(basename ${i})
+done
+
+for i in ${THIS_DIR}/*.cmake
+do
+    ln -sf ../${i} ${CMAKE_DIR}/$(basename ${i})
+done
+
+# cp ${THIS_DIR}/*.h ${INC_DIR}/
+# cp ${THIS_DIR}/*.hpp ${INC_DIR}/
+# cp ${THIS_DIR}/*.cmake ${CMAKE_DIR}/

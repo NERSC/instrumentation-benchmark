@@ -41,3 +41,24 @@
 #if !defined(INSTRUMENT_STOP)
 #    define INSTRUMENT_STOP(...)
 #endif
+
+//--------------------------------------------------------------------------------------//
+//
+//      Analysis macros that go around baseline functions
+//
+//--------------------------------------------------------------------------------------//
+
+// create something if needed
+#if !defined(ANALYSIS_CREATE)
+#    define ANALYSIS_CREATE(...)
+#endif
+
+// start tool as needed
+#if !defined(ANALYSIS_START)
+#    define ANALYSIS_START(...)
+#endif
+
+// stop tool as needed
+#if !defined(ANALYSIS_STOP)
+#    define ANALYSIS_STOP(...)
+#endif

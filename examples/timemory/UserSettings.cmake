@@ -1,11 +1,16 @@
 
 # common list of components
-set(_COMPONENTS headers c cxx compile-options arch)
+set(_COMPONENTS headers c cxx compile-options arch papi caliper gperftools-cpu)
 set(TIMEMORY_COMPONENTS "${_COMPONENTS}" CACHE STRING "timemory components")
 
 option(ENABLE_CALIPER "Enable Caliper benchmarking" OFF)
+option(ENABLE_ANALYSIS "Enable HW counter analysis" OFF)
 
-find_package(timemory REQUIRED COMPONENTS ${TIMEMORY_COMPONENTS})
+if(ENABLE_ANALYSIS)
+    find_package(timemory REQUIRED COMPONENTS compile-options arch papi)
+else()
+    find_package(timemory REQUIRED COMPONENTS ${TIMEMORY_COMPONENTS})
+endif()
 
 add_library(timemory-config INTERFACE)
 target_link_libraries(timemory-config INTERFACE timemory)
@@ -15,34 +20,46 @@ endif()
 
 include_directories(${timemory_INCLUDE_DIR})
 
-define_submodule(
-    NAME                library
-    LANGUAGE            CXX
-    HEADER_FILE         timemory_cxx_ptr_library.hpp
-    INTERFACE_LIBRARY   timemory-config
-    EXTRA_LANGUAGES     C
-)
+if(ENABLE_ANALYSIS)
 
-define_submodule(
-    NAME                variadic_enum
-    LANGUAGE            C
-    HEADER_FILE         timemory_c_enum_library.h
-    INTERFACE_LIBRARY   timemory-config
-)
+    define_submodule(
+        NAME                analysis
+        LANGUAGE            CXX
+        HEADER_FILE         timemory_analysis.hpp
+        INTERFACE_LIBRARY   timemory-config
+        COMPILE_DEFINITIONS USE_ANALYSIS
+    )
 
-define_submodule(
-    NAME                basic_marker
-    LANGUAGE            CXX
-    HEADER_FILE         timemory_cxx_templates.hpp
-    INTERFACE_LIBRARY   timemory-config
-)
-
-define_submodule(
-    NAME                basic_pointer
-    LANGUAGE            CXX
-    HEADER_FILE         timemory_cxx_templates_pointer.hpp
-    INTERFACE_LIBRARY   timemory-config
-)
+else()
+    define_submodule(
+        NAME                library
+        LANGUAGE            CXX
+        HEADER_FILE         timemory_cxx_ptr_library.hpp
+        INTERFACE_LIBRARY   timemory-config
+        EXTRA_LANGUAGES     C
+    )
+    
+    define_submodule(
+        NAME                variadic_enum
+        LANGUAGE            C
+        HEADER_FILE         timemory_c_enum_library.h
+        INTERFACE_LIBRARY   timemory-config
+    )
+    
+    define_submodule(
+        NAME                basic_marker
+        LANGUAGE            CXX
+        HEADER_FILE         timemory_cxx_templates.hpp
+        INTERFACE_LIBRARY   timemory-config
+    )
+    
+    define_submodule(
+        NAME                basic_pointer
+        LANGUAGE            CXX
+        HEADER_FILE         timemory_cxx_templates_pointer.hpp
+        INTERFACE_LIBRARY   timemory-config
+    )
+endif()
 
 if(ENABLE_CALIPER)
 

@@ -22,25 +22,23 @@ def plot(x, y, yerr, label, fname):
     font = {'family': 'serif',
             'color':  'darkblue',
             'weight': 'bold',
-            'size': 16,
             }
 
     dpi = 100
     fig = plt.figure(figsize=(1600 / dpi, 800 / dpi), dpi=dpi)
     ax = fig.add_subplot(111)
-    plt.title(label)
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    plt.title(label, **font, size=22)
     axes = plt.gca()
     _max = 1.25 * max([abs(y[i]) + abs(yerr[i]) for i in range(len(y))])
     axes.set_ylim([-_max, _max])
     axes.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
     plt.errorbar(x, y, yerr=yerr, fmt='bD--', label=label)
-    plt.xticks(rotation=-45, rotation_mode='anchor', **font)
+    plt.xticks(rotation=-45, rotation_mode='anchor', **font, size=18)
     # zip joins x and y coordinates in pairs
     for _x, _y in zip(x, y):
         _label = "{:8.3e}".format(_y)
         plt.annotate(_label, (_x, _y), textcoords="offset points",
-                     xytext=(0, 10), ha='center', **font)
+                     xytext=(0, 10), ha='center', **font, size=18)
     box = ax.get_position()
     ax.set_position([box.x0, box.y0 + 0.15 * box.height,
                      box.width, 0.85 * box.height])
@@ -121,6 +119,7 @@ if __name__ == "__main__":
                         help="Compute overhead w.r.t. to this submodule measurement")
     parser.add_argument("-i", "--iterations", type=int, default=50,
                         help="Number of iterations per timing entry")
+    parser.add_argument("--skip-plot", action='store_true', help="Skip plotting")
     # specific to MATMUL
     parser.add_argument("-n", "--size", type=int,
                         default=100, help="Matrix size (N x N)")
@@ -174,7 +173,7 @@ if __name__ == "__main__":
                     mtx_time_data["yerr"] += [data["runtime"][1]]
                     mtx_over_data["yerr"] += [data["overhead"][1]]
 
-    if len(mtx_keys) > 0:
+    if len(mtx_keys) > 0 and not args.skip_plot:
         plot(mtx_keys, mtx_time_data["y"],
              mtx_time_data["yerr"], "Matrix Multiply ({} x {}) Runtime".format(
                  m_N, m_N),
@@ -204,7 +203,7 @@ if __name__ == "__main__":
                     fib_time_data["yerr"] += [data["runtime"][1]]
                     fib_over_data["yerr"] += [data["overhead"][1]]
 
-    if len(fib_keys) > 0:
+    if len(fib_keys) > 0 and not args.skip_plot:
         plot(fib_keys, fib_time_data["y"],
              fib_time_data["yerr"], "Fibonacci({}, {}) Runtime".format(
                  m_F, m_C),
