@@ -29,15 +29,23 @@
 
 #include <caliper/cali.h>
 
-#if defined(__cplusplus)
-#    define STATIC_INIT static
-#else
-#    define STATIC_INIT
-#endif
-
 #define INSTRUMENT_CONFIGURE() cali_init();
-#define INSTRUMENT_CREATE(...)                                                           \
-    STATIC_INIT cali_id_t _id = cali_create_attribute(                                   \
-        "inst", CALI_TYPE_STRING, CALI_ATTR_NESTED | CALI_ATTR_SCOPE_PROCESS);
-#define INSTRUMENT_START(...) cali_begin_string(_id, __FUNCTION__);
-#define INSTRUMENT_STOP(...) cali_end(_id);
+
+#if defined(__cplusplus)
+#    define INSTRUMENT_CREATE(...)                                                       \
+        static cali_id_t _id = cali_create_attribute(                                    \
+            "inst", CALI_TYPE_STRING, CALI_ATTR_NESTED | CALI_ATTR_SCOPE_PROCESS);
+#    define INSTRUMENT_START(...) cali_begin_string(_id, __FUNCTION__);
+#    define INSTRUMENT_STOP(...) cali_end(_id);
+#else
+#    define INSTRUMENT_CREATE(...)                                                       \
+        static cali_id_t* _id = NULL;                                                    \
+        if(_id == NULL)                                                                  \
+        {                                                                                \
+            _id  = malloc(sizeof(cali_id_t));                                            \
+            *_id = cali_create_attribute("inst", CALI_TYPE_STRING,                       \
+                                         CALI_ATTR_NESTED | CALI_ATTR_SCOPE_PROCESS);    \
+        }
+#    define INSTRUMENT_START(...) cali_begin_string(*_id, __FUNCTION__);
+#    define INSTRUMENT_STOP(...) cali_end(*_id);
+#endif
