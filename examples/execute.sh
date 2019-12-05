@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 : ${PYTHON:=python3}
-: ${ARGS:="-i 200 -f 36 -c 19"}
+: ${ARGS:="-i 200 -f 36 -c 19 -e 100"}
 
 rm -rf DISABLED* ENABLED* \
     timemory-enabled-output
