@@ -4,6 +4,7 @@ set(_COMPONENTS headers c cxx compile-options arch papi)
 set(TIMEMORY_COMPONENTS "${_COMPONENTS}" CACHE STRING "timemory components")
 
 option(ENABLE_CALIPER "Enable Caliper benchmarking" OFF)
+option(ENABLE_TAU "Enable TAU benchmarking" OFF)
 
 find_package(timemory REQUIRED COMPONENTS ${TIMEMORY_COMPONENTS})
 
@@ -59,12 +60,25 @@ if(ENABLE_CALIPER)
         EXTRA_LANGUAGES     C
     )
 
-    # define_submodule(
-    #    NAME                cali_process_scope
-    #    LANGUAGE            CXX
-    #    HEADER_FILE         caliper_process_scope.h
-    #    INTERFACE_LIBRARY   caliper
-    #    EXTRA_LANGUAGES     C
-    #)
+endif()
+
+if(ENABLE_TAU)
+
+    add_library(tau INTERFACE)
+    if(TARGET timemory-tau)
+        target_link_libraries(tau INTERFACE timemory-tau)
+    else()
+        find_package(TAU REQUIRED)
+        target_link_libraries(tau INTERFACE ${TAU_LIBRARIES})
+        target_include_directories(tau INTERFACE ${TAU_INCLUDE_DIRS})
+    endif()
+
+    define_submodule(
+        NAME                tau_marker
+        LANGUAGE            CXX
+        HEADER_FILE         tau_marker.h
+        INTERFACE_LIBRARY   tau
+        EXTRA_LANGUAGES     C
+    )
 
 endif()

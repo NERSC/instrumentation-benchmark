@@ -20,6 +20,12 @@ def lprint(message):
 
 def plot(x, y, yerr, label, fname):
 
+    title_font = {'family': 'serif',
+                  'color':  'black',
+                  'weight': 'bold',
+                  'size': 20,
+                  }
+
     font = {'family': 'serif',
             'color':  'darkblue',
             'weight': 'bold',
@@ -29,7 +35,7 @@ def plot(x, y, yerr, label, fname):
     dpi = 100
     fig = plt.figure(figsize=(1600 / dpi, 800 / dpi), dpi=dpi)
     ax = fig.add_subplot(111)
-    plt.title(label)
+    plt.title(label, **title_font)
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
     axes = plt.gca()
     _max = 1.25 * max([abs(y[i]) + abs(yerr[i]) for i in range(len(y))])
