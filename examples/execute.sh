@@ -15,6 +15,7 @@ export TAU_SET_NODE=0
 #----------------------------------------------------------#
 unset CALI_CONFIG_PROFILE
 export TAU_PROFILE=0
+export TAU_DISABLE_INSTRUMENTATION=1
 export TIMEMORY_ENABLED=OFF
 export TIMEMORY_OUTPUT_PATH=timemory-disabled-output
 
@@ -27,6 +28,7 @@ set +e
 #----------------------------------------------------------#
 export CALI_CONFIG_PROFILE=runtime-report
 export TAU_PROFILE=1
+export TAU_DISABLE_INSTRUMENTATION=0
 export TIMEMORY_ENABLED=ON
 export TIMEMORY_OUTPUT_PATH=timemory-enabled-output
 
