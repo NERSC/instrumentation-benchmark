@@ -51,7 +51,7 @@ if(ENABLE_CALIPER)
 
     add_library(caliper-config INTERFACE)
     target_link_libraries(caliper-config INTERFACE caliper)
-    target_include_directories(caliper-config INTERFACE ${caliper_INCLUDE_DIRS})
+    target_include_directories(caliper-config INTERFACE ${caliper_INCLUDE_DIR})
 
     define_submodule(
         NAME                caliper_marker
