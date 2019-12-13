@@ -31,6 +31,6 @@ cd ../..
 for i in $(ls ${THIS_DIR}/*.cmake)
 do
     fname=$(basename ${i})
-    lpath="../../examples/timemory/${fname}"
+    lpath="../../cmake/${fname}"
     ln -sf ${lpath} ${CMAKE_DIR}/${fname}
 done
