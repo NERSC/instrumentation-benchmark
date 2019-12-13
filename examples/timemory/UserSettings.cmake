@@ -49,11 +49,15 @@ if(ENABLE_CALIPER)
 
     find_package(caliper REQUIRED)
 
+    add_library(caliper-config INTERFACE)
+    target_link_libraries(caliper-config INTERFACE caliper)
+    target_include_directories(caliper-config INTERFACE ${caliper_INCLUDE_DIRS})
+
     define_submodule(
         NAME                caliper_marker
         LANGUAGE            CXX
         HEADER_FILE         caliper_thread_scope.h
-        INTERFACE_LIBRARY   caliper
+        INTERFACE_LIBRARY   caliper-config
         EXTRA_LANGUAGES     C
     )
 
