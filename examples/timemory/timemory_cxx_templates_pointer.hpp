@@ -33,6 +33,6 @@ using toolset_t = tim::auto_tuple<wall_clock>;
 #define INSTRUMENT_CONFIGURE()
 #define INSTRUMENT_CREATE(...)
 #define INSTRUMENT_START(...)                                                            \
-    static const char* label = TIMEMORY_JOIN("_", __FUNCTION__, "heap").c_str();         \
-    TIMEMORY_BLANK_POINTER(toolset_t, label);
+    static auto heap_label = TIMEMORY_JOIN("_", __FUNCTION__, "heap");                   \
+    TIMEMORY_BLANK_POINTER(toolset_t, heap_label.c_str());
 #define INSTRUMENT_STOP(...)

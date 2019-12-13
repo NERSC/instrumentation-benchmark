@@ -35,6 +35,6 @@ using toolset_t = tim::auto_tuple<user_list_bundle>;
     user_list_bundle::configure<wall_clock>();
 #define INSTRUMENT_CREATE(...)
 #define INSTRUMENT_START(...)                                                            \
-    static const char* label = TIMEMORY_JOIN("_", __FUNCTION__, "bundle").c_str();       \
-    TIMEMORY_BLANK_POINTER(toolset_t, label);
+    static auto bundle_label = TIMEMORY_JOIN("_", __FUNCTION__, "bundle")                \
+        TIMEMORY_BLANK_POINTER(toolset_t, bundle_label.c_str());
 #define INSTRUMENT_STOP(...)
