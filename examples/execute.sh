@@ -1,5 +1,7 @@
 #!/bin/bash
 
+chmod 755 ./execute.py
+
 : ${ARGS:="-i 100 -f 36 -c 19"}
 
 rm -rf \
@@ -24,7 +26,7 @@ export TIMEMORY_ENABLED=OFF
 export TIMEMORY_OUTPUT_PATH=timemory-disabled-output
 
 set -e
-python ./execute.py -p DISABLED ${ARGS} $@
+./execute.py -p DISABLED ${ARGS} $@
 set +e
 
 #----------------------------------------------------------#
@@ -37,5 +39,5 @@ export TIMEMORY_ENABLED=ON
 export TIMEMORY_OUTPUT_PATH=timemory-enabled-output
 
 set -e
-python ./execute.py -p ENABLED ${ARGS} $@
+./execute.py -p ENABLED ${ARGS} $@
 set +e
