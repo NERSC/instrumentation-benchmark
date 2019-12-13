@@ -20,20 +20,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if defined(__cplusplus)
-#    include <iostream>
-#    include <string>
-#else
-#    include <stdint.h>
-#endif
+#include <iostream>
+#include <string>
 
-#define TAU_ENABLED
-#define TAU_DOT_H_LESS_HEADERS
-#include "TAU.h"
+#include <timemory/timemory.hpp>
+
+using namespace tim::component;
+// using toolset_t = tim::auto_tuple<wall_clock, cpu_clock, peak_rss>;
+// using toolset_t = tim::auto_timer;
+using toolset_t = tim::auto_tuple<user_list_bundle>;
 
 #define INSTRUMENT_CONFIGURE()                                                           \
-    Tau_set_node(0);                                                                     \
-    TAU_REGISTER_THREAD();
+    user_list_bundle::reset();                                                           \
+    user_list_bundle::configure<wall_clock>();
 #define INSTRUMENT_CREATE(...)
-#define INSTRUMENT_START(...) TAU_START(__FUNCTION__);
-#define INSTRUMENT_STOP(...) TAU_STOP(__FUNCTION__);
+#define INSTRUMENT_START(...)                                                            \
+    static const char* label = TIMEMORY_JOIN("_", __FUNCTION__, "bundle").c_str();       \
+    TIMEMORY_BLANK_POINTER(toolset_t, label);
+#define INSTRUMENT_STOP(...)

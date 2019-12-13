@@ -6,14 +6,31 @@
 #
 #-----------------------------------------------------------#
 
-THIS_DIR=$(dirname ${BASH_SOURCE[0]})
-INC_DIR=${THIS_DIR}/../../include/user
-CMAKE_DIR=${THIS_DIR}/../../cmake
+SCRIPT_DIR=$(dirname ${BASH_SOURCE[0]})
+THIS_DIR=$(python -c "import os; print(os.path.realpath('${SCRIPT_DIR}'))")
+BASE_DIR=$(python -c "import os; print(os.path.realpath('${SCRIPT_DIR}/../..'))")
 
-# echo "${THIS_DIR}"
-# echo "${INC_DIR}"
-# echo "${CMAKE_DIR}"
+INC_DIR=${BASE_DIR}/include/user
+CMAKE_DIR=${BASE_DIR}/cmake
 
-cp ${THIS_DIR}/*.h ${INC_DIR}/
-cp ${THIS_DIR}/*.hpp ${INC_DIR}/
-cp ${THIS_DIR}/*.cmake ${CMAKE_DIR}/
+remove-path()
+{
+    echo $2 | sed s,${1}/,,g
+}
+
+HEADERS=$(ls ${THIS_DIR}/*.h ${THIS_DIR}/*.hpp)
+for i in ${HEADERS}
+do
+    fname=$(basename ${i})
+    lpath="../../examples/timemory/${fname}"
+    ln -sf ${lpath} ${INC_DIR}/${fname}
+done
+
+cd ../..
+
+for i in $(ls ${THIS_DIR}/*.cmake)
+do
+    fname=$(basename ${i})
+    lpath="../../examples/timemory/${fname}"
+    ln -sf ${lpath} ${CMAKE_DIR}/${fname}
+done

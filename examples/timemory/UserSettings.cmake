@@ -6,18 +6,8 @@ set(TIMEMORY_COMPONENTS "${_COMPONENTS}" CACHE STRING "timemory components")
 option(ENABLE_CALIPER "Enable Caliper benchmarking" OFF)
 option(ENABLE_TAU "Enable TAU benchmarking" OFF)
 
+set(timemory_FIND_COMPONENTS_INTERFACE timemory-config)
 find_package(timemory REQUIRED COMPONENTS ${TIMEMORY_COMPONENTS})
-
-set(timemory_FIND_COMPONENTS_INTERFACE timemory-templates)
-find_package(timemory REQUIRED COMPONENTS headers compile-options arch papi)
-
-add_library(timemory-config INTERFACE)
-target_link_libraries(timemory-config INTERFACE timemory)
-if(CMAKE_CXX_COMPILER_IS_GNU)
-    target_compile_options(timemory-config INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-Wno-class-memaccess>)
-endif()
-
-include_directories(${timemory_INCLUDE_DIR})
 
 define_submodule(
     NAME                library
@@ -35,17 +25,24 @@ define_submodule(
 )
 
 define_submodule(
-    NAME                basic_marker
+    NAME                stack_template
     LANGUAGE            CXX
     HEADER_FILE         timemory_cxx_templates.hpp
-    INTERFACE_LIBRARY   timemory-templates
+    INTERFACE_LIBRARY   timemory-config
 )
 
 define_submodule(
-    NAME                basic_pointer
+    NAME                heap_template
     LANGUAGE            CXX
     HEADER_FILE         timemory_cxx_templates_pointer.hpp
-    INTERFACE_LIBRARY   timemory-templates
+    INTERFACE_LIBRARY   timemory-config
+)
+
+define_submodule(
+    NAME                functional_template
+    LANGUAGE            CXX
+    HEADER_FILE         timemory_cxx_bundle.hpp
+    INTERFACE_LIBRARY   timemory-config
 )
 
 if(ENABLE_CALIPER)

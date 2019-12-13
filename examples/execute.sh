@@ -2,8 +2,12 @@
 
 : ${ARGS:="-i 100 -f 36 -c 19"}
 
-rm -rf DISABLED* ENABLED* \
-    timemory-enabled-output
+rm -rf \
+    DISABLED* \
+    ENABLED* \
+    timemory-enabled-output \
+    timemory-disabled-output \
+    profile.*
 
 export TAU_THROTTLE=0
 export TAU_TRACE=0

@@ -7,6 +7,7 @@ from statistics import mean, stdev
 
 import numpy as np
 import matplotlib.pyplot as plt
+# from timemory.util import auto_timer
 
 lout = None
 
@@ -138,6 +139,8 @@ if __name__ == "__main__":
                         default=43, help="Fibonacci value")
     parser.add_argument("-c", "--cutoff", type=int,
                         default=23, help="Fibonacci cutoff")
+    parser.add_argument("-g", "--grep", help="Modules to grep for",
+                        nargs='*', default=None, type=str)
 
     args = parser.parse_args()
 
@@ -167,14 +170,23 @@ if __name__ == "__main__":
         else:
             return "{}_{}".format(lang.upper(), module.upper())
 
+    def matches(module, items):
+        for item in items:
+            if module in item:
+                return True
+        return False
+
     if "matrix" in args.modes:
         for lang in args.languages:
             baseline = None
             for submodule in submodules:
+                if args.grep is not None and not matches(submodule, args.grep):
+                    continue
                 prefix = "{}_MATMUL".format(args.prefix.upper())
                 key = "[{}]> {}_{}_{}".format(
                     lang.upper(), args.prefix.upper(), "MATMUL", submodule.upper())
                 lprint("Executing {}...".format(key))
+                #with auto_timer(key=key, mode="blank"):
                 ret = getattr(bench, submodule).matmul(m_N, m_E, m_I, lang)
                 if ret is not None:
                     if baseline is None:
@@ -203,11 +215,15 @@ if __name__ == "__main__":
         for lang in args.languages:
             baseline = None
             for submodule in submodules:
+                if args.grep is not None and not matches(submodule, args.grep):
+                    continue
                 prefix = "{}_FIBONACCI".format(args.prefix.upper())
                 key = "[{}]> {}_{}_{}".format(
                     lang.upper(), args.prefix.upper(), "FIBONACCI", submodule.upper())
                 lprint("Executing {}...".format(key))
-                ret = getattr(bench, submodule).fibonacci(m_F, m_C, m_I, lang)
+                #with auto_timer(key=key, mode="blank"):
+                ret = getattr(bench, submodule).fibonacci(
+                        m_F, m_C, m_I, lang)
                 if ret is not None:
                     if baseline is None:
                         baseline = ret

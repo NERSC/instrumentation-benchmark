@@ -27,5 +27,6 @@
 
 #define INSTRUMENT_CONFIGURE()
 #define INSTRUMENT_CREATE(...)
-#define INSTRUMENT_START(name) void* timer = TIMEMORY_BASIC_MARKER("", WALL_CLOCK);
+#define INSTRUMENT_START(name)                                                           \
+    void* timer = TIMEMORY_BASIC_MARKER("_variadic_enum", WALL_CLOCK);
 #define INSTRUMENT_STOP(name) FREE_TIMEMORY_MARKER(timer);

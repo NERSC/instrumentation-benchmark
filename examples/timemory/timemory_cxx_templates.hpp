@@ -32,5 +32,7 @@ using toolset_t = tim::auto_tuple<wall_clock>;
 
 #define INSTRUMENT_CONFIGURE()
 #define INSTRUMENT_CREATE(...)
-#define INSTRUMENT_START(...) TIMEMORY_BASIC_MARKER(toolset_t, "");
+#define INSTRUMENT_START(...)                                                            \
+    static const char* label = TIMEMORY_JOIN("_", __FUNCTION__, "stack").c_str();        \
+    TIMEMORY_BLANK_POINTER(toolset_t, label);
 #define INSTRUMENT_STOP(...)
